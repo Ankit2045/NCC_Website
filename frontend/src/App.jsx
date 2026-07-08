@@ -1438,6 +1438,7 @@ function AppContent() {
                                             <div className="form-group">
                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Squadron Platoon *</label>
                                                 <select className="form-control" value={regSquadron} onChange={(e) => setRegSquadron(e.target.value)} required>
+                                                    <option value="hq">Headquarters (HQ)</option>
                                                     <option value="alpha">Alpha</option>
                                                     <option value="bravo">Bravo</option>
                                                     <option value="charlie">Charlie</option>
@@ -2337,6 +2338,14 @@ function AppContent() {
                                                         {/* 2. Squadron Tables (Colored Red, Yellow, Blue, Green) */}
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
                                                             
+                                                            {/* Headquarters Squadron - SLATE table */}
+                                                            <div style={{ border: '2px solid #475569', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#f1f5f9' }}>
+                                                                <h4 style={{ color: '#475569', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #cbd5e1', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#475569' }}></span> Headquarters Platoon (HQ Group)
+                                                                </h4>
+                                                                <SquadronTable squadronId="hq" borderTheme="#475569" />
+                                                            </div>
+                                                            
                                                             {/* Alpha Squadron - RED table */}
                                                             <div style={{ border: '2px solid #ef4444', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#fff5f5' }}>
                                                                 <h4 style={{ color: '#ef4444', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #fca5a5', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2508,6 +2517,7 @@ function AppContent() {
                                                         <div className="form-group">
                                                             <label className="form-label" style={{ fontSize: '0.78rem' }}>Squadron *</label>
                                                             <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetSquadron} onChange={(e) => setCadetSquadron(e.target.value)} required>
+                                                                <option value="hq">Headquarters (HQ)</option>
                                                                 <option value="alpha">Alpha</option>
                                                                 <option value="bravo">Bravo</option>
                                                                 <option value="charlie">Charlie</option>
