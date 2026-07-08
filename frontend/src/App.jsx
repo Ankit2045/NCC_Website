@@ -12,6 +12,15 @@ function AppContent() {
     const [exemptions, setExemptions] = useState([]);
     const [attendance, setAttendance] = useState([]);
     const [fines, setFines] = useState([]);
+    const [selectedViewCadet, setSelectedViewCadet] = useState(null);
+    const [squadronFilter, setSquadronFilter] = useState('all');
+
+    // Settings Form State
+    const [settingsEmail, setSettingsEmail] = useState('');
+    const [settingsPassword, setSettingsPassword] = useState('');
+    const [settingsCurrentPassword, setSettingsCurrentPassword] = useState('');
+    const [settingsMsg, setSettingsMsg] = useState('');
+    const [settingsError, setSettingsError] = useState('');
 
     // Login Form State
     const [loginEmail, setLoginEmail] = useState('');
@@ -338,7 +347,7 @@ function AppContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: regName,
-                    enrollmentNo: regEnrollment,
+                    enrollmentNo: regDliNo,
                     squadron: regSquadron,
                     rank: regRank,
                     wing: 'Army',
@@ -610,6 +619,59 @@ function AppContent() {
         }
     };
 
+    const handleApproveCadet = async (id) => {
+        try {
+            const res = await fetch(`/api/cadets/approve/${id}`, {
+                method: 'PUT'
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Cadet registration approved successfully!');
+                fetchAdminData();
+            } else {
+                alert(data.message || 'Failed to approve cadet');
+            }
+        } catch (err) {
+            console.error('Error approving cadet:', err);
+        }
+    };
+
+    const handleUpdateAccount = async (e) => {
+        e.preventDefault();
+        setSettingsMsg('');
+        setSettingsError('');
+
+        if (!settingsCurrentPassword) {
+            setSettingsError('Current password is required to verify identity.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/update-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    email: settingsEmail,
+                    newPassword: settingsPassword,
+                    currentPassword: settingsCurrentPassword
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setSettingsMsg('Account updated successfully!');
+                setSettingsEmail('');
+                setSettingsPassword('');
+                setSettingsCurrentPassword('');
+            } else {
+                setSettingsError(data.message || 'Failed to update account');
+            }
+        } catch (err) {
+            console.error('Error updating account:', err);
+            setSettingsError('Error contacting backend server.');
+        }
+    };
+
     // Attendance Sync Simulator
     const handleAttendanceSim = async (e) => {
         e.preventDefault();
@@ -782,6 +844,21 @@ function AppContent() {
                                     onClick={() => setCurrentTab('dashboard')}
                                 >
                                     {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
+                                </a>
+                            </li>
+                        )}
+                        {user && (
+                            <li>
+                                <a 
+                                    href="#" 
+                                    className={`nav-link ${currentTab === 'settings' ? 'active' : ''}`} 
+                                    onClick={() => {
+                                        setSettingsMsg('');
+                                        setSettingsError('');
+                                        setCurrentTab('settings');
+                                    }}
+                                >
+                                    <i className="fa-solid fa-user-gear"></i> Settings
                                 </a>
                             </li>
                         )}
@@ -1202,7 +1279,7 @@ function AppContent() {
                                 <div className="profile-card" style={{ padding: '25px', textAlign: 'left', alignSelf: 'start' }}>
                                     <h3 style={{ color: 'var(--primary)', marginBottom: '15px' }}><i className="fa-solid fa-building-shield"></i> ANO Office</h3>
                                     <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Associate NCC Officer (ANO)</strong>: Lt. Dr. Raghveder Gautam</p>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Office Location</strong>: Room 104, Gymnasium Building, DTU Campus</p>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Office Location</strong>: 3rd floor civil department, DTU</p>
                                     <p style={{ fontSize: '0.9rem', marginBottom: '20px' }}><strong>Training Schedule</strong>: Every Saturday (0800 hrs to 1300 hrs)</p>
                                     
                                     <div style={{ borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
@@ -1256,12 +1333,17 @@ function AppContent() {
                                 </form>
 
                                 <div style={{ marginTop: '20px', borderTop: '1px dashed var(--border)', paddingTop: '15px' }}>
-                                    <h4 style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                                        Official Seed Account:
+                                    <h4 style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: '10px', fontWeight: '700' }}>
+                                        Demo Quick-Access Accounts:
                                     </h4>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                                        <span><strong>User</strong>: admin@dtuncc.in</span>
-                                        <span><strong>Pass</strong>: admin123</span>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.75rem', color: 'var(--text-main)', textAlign: 'left' }}>
+                                        <div><strong>Admin</strong>: admin@dtuncc.in<br/>(Pass: admin123)</div>
+                                        <div><strong>ANO</strong>: ano@dtuncc.in<br/>(Pass: ano123)</div>
+                                        <div><strong>SUO</strong>: suo@dtuncc.in<br/>(Pass: suo123)</div>
+                                        <div><strong>JUO</strong>: juo@dtuncc.in<br/>(Pass: juo123)</div>
+                                        <div><strong>CSM</strong>: csm@dtuncc.in<br/>(Pass: csm123)</div>
+                                        <div><strong>CQMS</strong>: cqms@dtuncc.in<br/>(Pass: cqms123)</div>
+                                        <div style={{ gridColumn: 'span 2', borderTop: '1px dashed var(--border)', paddingTop: '5px', marginTop: '3px' }}><strong>Cadet</strong>: cadet@dtuncc.in (Pass: cadet123)</div>
                                     </div>
                                 </div>
                             </div>
@@ -1301,10 +1383,7 @@ function AppContent() {
                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
                                                 <input type="text" className="form-control" placeholder="E.g., Ankit Kumar" value={regName} onChange={(e) => setRegName(e.target.value)} required />
                                             </div>
-                                            <div className="form-group">
-                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Regimental No *</label>
-                                                <input type="text" className="form-control" placeholder="E.g., DEL/SD/24/4831" value={regEnrollment} onChange={(e) => setRegEnrollment(e.target.value)} required />
-                                            </div>
+
                                             <div className="form-group">
                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>DLI Number * (Begins with DL2024 or DL2025)</label>
                                                 <input type="text" className="form-control" placeholder="E.g., DL2024SD12345" value={regDliNo} onChange={(e) => setRegDliNo(e.target.value)} required />
@@ -1325,6 +1404,8 @@ function AppContent() {
                                                     <option value="L/Cpl">Lance Corporal (L/Cpl)</option>
                                                     <option value="Cpl">Corporal (Cpl)</option>
                                                     <option value="Sgt">Sergeant (Sgt)</option>
+                                                    <option value="CSM">Company Sergeant Major (CSM)</option>
+                                                    <option value="CQMS">Company Quartermaster Sergeant (CQMS)</option>
                                                     <option value="JUO">Junior Under Officer (JUO)</option>
                                                     <option value="SUO">Senior Under Officer (SUO)</option>
                                                 </select>
@@ -1614,29 +1695,42 @@ function AppContent() {
                                     </div>
                                 </div>
 
-                                {/* 3. CSM & CQMS */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                                    {/* CSM */}
-                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
-                                        <div style={{ width: '70px', height: '85px', minWidth: '70px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <i className="fa-solid fa-user" style={{ fontSize: '1.3rem', color: 'var(--text-muted)' }}></i>
-                                            <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
-                                        </div>
-                                        <div style={{ textAlign: 'left' }}>
-                                            <div style={{ fontSize: '0.68rem', color: 'var(--secondary)', fontWeight: '700' }}>Company Sergeant Majors (CSM)</div>
-                                            <h4 style={{ margin: '2px 0 0 0', fontSize: '0.9rem', fontWeight: '700' }}>Akshat Tiwari, Shreyansh Gupta</h4>
-                                        </div>
+                                {/* 3. CSM */}
+                                <div style={{ marginBottom: '25px' }}>
+                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                        Company Sergeant Major (CSM)
+                                    </h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                        {["Akshat Tiwari", "Shreyansh Gupta"].map((name, idx) => (
+                                            <div key={idx} className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
+                                                <div style={{ width: '60px', height: '75px', minWidth: '60px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <i className="fa-solid fa-user" style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}></i>
+                                                    <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
+                                                </div>
+                                                <div style={{ textAlign: 'left' }}>
+                                                    <div style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: '700' }}>Company Sergeant Major</div>
+                                                    <h4 style={{ margin: '2px 0 0 0', fontSize: '0.88rem', fontWeight: '700' }}>{name}</h4>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
+                                </div>
 
-                                    {/* CQMS */}
-                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
-                                        <div style={{ width: '70px', height: '85px', minWidth: '70px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <i className="fa-solid fa-user" style={{ fontSize: '1.3rem', color: 'var(--text-muted)' }}></i>
-                                            <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
-                                        </div>
-                                        <div style={{ textAlign: 'left' }}>
-                                            <div style={{ fontSize: '0.68rem', color: 'var(--secondary)', fontWeight: '700' }}>Company Quartermaster Sergeant</div>
-                                            <h4 style={{ margin: '2px 0 0 0', fontSize: '0.9rem', fontWeight: '700' }}>Ankit Singh</h4>
+                                {/* 4. CQMS */}
+                                <div style={{ marginBottom: '25px' }}>
+                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                        Company Quartermaster Sergeant (CQMS)
+                                    </h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                        <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
+                                            <div style={{ width: '60px', height: '75px', minWidth: '60px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                <i className="fa-solid fa-user" style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}></i>
+                                                <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
+                                            </div>
+                                            <div style={{ textAlign: 'left' }}>
+                                                <div style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: '700' }}>CQMS</div>
+                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.88rem', fontWeight: '700' }}>Ankit Singh</h4>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2113,39 +2207,111 @@ function AppContent() {
                                         {/* Cadet CRUD Directory */}
                                         <div className="dashboard-section" style={{ padding: '25px' }}>
                                             <h3 style={{ fontSize: '1.15rem', marginBottom: '15px', fontWeight: '700' }}><i className="fa-solid fa-address-book"></i> Active Cadet Directory</h3>
+                                            
+                                            {/* 1. Pending Approvals Sub-section */}
+                                            {cadets.filter(c => !c.approved).length > 0 && (
+                                                <div style={{ marginBottom: '25px', backgroundColor: '#fff9f0', border: '1px solid #ffe8cc', borderRadius: 'var(--radius-md)', padding: '15px' }}>
+                                                    <h4 style={{ color: '#d97706', fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <i className="fa-solid fa-user-clock"></i> Pending Registration Approvals
+                                                    </h4>
+                                                    <div style={{ overflowX: 'auto' }}>
+                                                        <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.78rem' }}>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Name</th>
+                                                                    <th>DLI (Regt No)</th>
+                                                                    <th>Squadron</th>
+                                                                    <th>Rank</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {cadets.filter(c => !c.approved).map(c => (
+                                                                    <tr key={c._id}>
+                                                                        <td>
+                                                                            <button 
+                                                                                onClick={() => setSelectedViewCadet(c)}
+                                                                                style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                                                            >
+                                                                                {c.name}
+                                                                            </button>
+                                                                        </td>
+                                                                        <td>{c.enrollmentNo || c.dliNo}</td>
+                                                                        <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
+                                                                        <td>{c.rank}</td>
+                                                                        <td>
+                                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                                <button className="btn btn-primary" onClick={() => handleApproveCadet(c._id)} style={{ padding: '4px 8px', fontSize: '0.7rem', backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}>Approve</button>
+                                                                                <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '4px 8px', fontSize: '0.7rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}>Reject</button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* 2. Squadron Filter Tabs */}
+                                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                                                {['all', 'alpha', 'bravo', 'charlie', 'delta'].map(sq => (
+                                                    <button 
+                                                        key={sq}
+                                                        className={`btn ${squadronFilter === sq ? 'btn-primary' : 'btn-outline'}`}
+                                                        style={{ padding: '6px 12px', fontSize: '0.78rem', textTransform: 'uppercase' }}
+                                                        onClick={() => setSquadronFilter(sq)}
+                                                    >
+                                                        {sq === 'all' ? 'All Squadrons' : `${sq} Squadron`}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {/* 3. Filtered Cadets List */}
                                             <div style={{ overflowX: 'auto', maxHeight: '350px', overflowY: 'auto' }}>
                                                 <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem' }}>
                                                     <thead>
                                                         <tr>
-                                                            <th>Name</th>
+                                                            <th>Rank & Name (Click for Details)</th>
                                                             <th>ID</th>
-                                                            <th>Regt No</th>
+                                                            <th>DLI / Regt No</th>
                                                             <th>Squadron</th>
-                                                            <th>Rank</th>
                                                             <th>Contact</th>
+                                                            <th>Status</th>
                                                             <th>Actions</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {cadets.map(c => (
-                                                            <tr key={c._id}>
-                                                                <td><strong>{c.name}</strong></td>
-                                                                <td>{c.cadetId}</td>
-                                                                <td>{c.enrollmentNo}</td>
-                                                                <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
-                                                                <td>{c.rank}</td>
-                                                                <td>{c.contact}</td>
-                                                                <td>
-                                                                    <div style={{ display: 'flex', gap: '5px' }}>
-                                                                        <button className="btn btn-outline" onClick={() => handleEditClick(c)} style={{ padding: '4px 8px', fontSize: '0.75rem' }}><i className="fa-solid fa-pen"></i></button>
-                                                                        <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}><i className="fa-solid fa-trash"></i></button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                        {cadets.length === 0 && (
+                                                        {cadets
+                                                            .filter(c => c.approved)
+                                                            .filter(c => squadronFilter === 'all' || c.squadron === squadronFilter)
+                                                            .map(c => (
+                                                                <tr key={c._id}>
+                                                                    <td>
+                                                                        <button 
+                                                                            onClick={() => setSelectedViewCadet(c)}
+                                                                            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                                                            title="View full cadet profile details"
+                                                                        >
+                                                                            {c.rank} {c.name}
+                                                                        </button>
+                                                                    </td>
+                                                                    <td>{c.cadetId}</td>
+                                                                    <td>{c.enrollmentNo || c.dliNo}</td>
+                                                                    <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
+                                                                    <td>{c.contact}</td>
+                                                                    <td><span className="badge badge-success">Approved</span></td>
+                                                                    <td>
+                                                                        <div style={{ display: 'flex', gap: '5px' }}>
+                                                                            <button className="btn btn-outline" onClick={() => handleEditClick(c)} style={{ padding: '4px 8px', fontSize: '0.75rem' }}><i className="fa-solid fa-pen"></i></button>
+                                                                            <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}><i className="fa-solid fa-trash"></i></button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        {cadets.filter(c => c.approved).filter(c => squadronFilter === 'all' || c.squadron === squadronFilter).length === 0 && (
                                                             <tr>
-                                                                <td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No cadets enrolled in unit database yet.</td>
+                                                                <td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No enrolled cadets found for the selected squadron filter.</td>
                                                             </tr>
                                                         )}
                                                     </tbody>
@@ -2439,6 +2605,158 @@ function AppContent() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {currentTab === 'settings' && user && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', maxWidth: '600px', paddingBottom: '40px' }}>
+                            <div className="section-header" style={{ marginBottom: '30px', textAlign: 'left' }}>
+                                <h2>Account Security & Settings</h2>
+                                <p>Update your email address or change your account login password below.</p>
+                            </div>
+
+                            <div className="profile-card" style={{ padding: '30px', textAlign: 'left' }}>
+                                <h3 style={{ color: 'var(--primary)', fontSize: '1.15rem', textTransform: 'uppercase', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '8px', fontWeight: '700' }}>
+                                    <i className="fa-solid fa-lock"></i> Update Credentials
+                                </h3>
+
+                                {settingsMsg && (
+                                    <div className="alert alert-success" style={{ marginBottom: '15px', fontSize: '0.85rem' }}>
+                                        <i className="fa-solid fa-circle-check"></i> {settingsMsg}
+                                    </div>
+                                )}
+                                {settingsError && (
+                                    <div className="alert alert-danger" style={{ marginBottom: '15px', fontSize: '0.85rem' }}>
+                                        <i className="fa-solid fa-triangle-exclamation"></i> {settingsError}
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleUpdateAccount}>
+                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                        <label className="form-label">Current Email Address</label>
+                                        <input type="text" className="form-control" value={user.email} disabled style={{ backgroundColor: '#f0f4f8' }} />
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                        <label className="form-label">New Email Address (Optional)</label>
+                                        <input 
+                                            type="email" 
+                                            className="form-control" 
+                                            placeholder="Leave blank to keep current email" 
+                                            value={settingsEmail} 
+                                            onChange={(e) => setSettingsEmail(e.target.value)} 
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                        <label className="form-label">New Password (Optional)</label>
+                                        <input 
+                                            type="password" 
+                                            className="form-control" 
+                                            placeholder="Leave blank to keep current password" 
+                                            value={settingsPassword} 
+                                            onChange={(e) => setSettingsPassword(e.target.value)} 
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: '20px', borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
+                                        <label className="form-label" style={{ color: 'var(--danger)', fontWeight: '700' }}>Current Password * (Required to save changes)</label>
+                                        <input 
+                                            type="password" 
+                                            className="form-control" 
+                                            placeholder="Confirm your identity with current password" 
+                                            value={settingsCurrentPassword} 
+                                            onChange={(e) => setSettingsCurrentPassword(e.target.value)} 
+                                            required 
+                                        />
+                                    </div>
+
+                                    <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                                        Save Changes
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {selectedViewCadet && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                        <div className="profile-card" style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', padding: '30px', position: 'relative', textAlign: 'left', borderTop: '5px solid var(--saffron)' }}>
+                            <button 
+                                onClick={() => setSelectedViewCadet(null)} 
+                                style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-muted)' }}
+                            >
+                                <i className="fa-solid fa-xmark"></i>
+                            </button>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
+                                <div style={{ width: '80px', height: '100px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#f0f4f8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                    <i className="fa-solid fa-user-shield" style={{ fontSize: '2rem', color: 'var(--text-muted)' }}></i>
+                                    <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', marginTop: '4px' }}>Profile</span>
+                                </div>
+                                <div>
+                                    <span className="badge" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.75rem', padding: '4px 8px', textTransform: 'uppercase' }}>{selectedViewCadet.rank}</span>
+                                    <h2 style={{ margin: '8px 0 4px 0', fontSize: '1.6rem', color: 'var(--navy-blue)', fontWeight: '700' }}>{selectedViewCadet.name}</h2>
+                                    <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)' }}>DLI: <strong>{selectedViewCadet.enrollmentNo || selectedViewCadet.dliNo}</strong> | Squadron: <strong style={{ textTransform: 'uppercase' }}>{selectedViewCadet.squadron}</strong></p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                                {/* Block 1: Basic & Academic */}
+                                <div>
+                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Academic & College Details</h4>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>College</strong>: {selectedViewCadet.college || 'DTU'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Course</strong>: {selectedViewCadet.course || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Branch</strong>: {selectedViewCadet.branch || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>College Roll No</strong>: {selectedViewCadet.collegeRollNo || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Cadet Year</strong>: Year {selectedViewCadet.year || 'N/A'} (Acad Year: {selectedViewCadet.academicYear || 'N/A'})</p>
+                                </div>
+
+                                {/* Block 2: Contacts */}
+                                <div>
+                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Contact Information</h4>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Mobile No</strong>: {selectedViewCadet.contact || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Alt Mobile</strong>: {selectedViewCadet.altContact || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Mail ID</strong>: {selectedViewCadet.email || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Address</strong>: {selectedViewCadet.address || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>City/Pincode</strong>: {selectedViewCadet.city || 'N/A'} - {selectedViewCadet.pincode || 'N/A'} ({selectedViewCadet.residenceType || 'N/A'})</p>
+                                </div>
+
+                                {/* Block 3: Parents & Medical */}
+                                <div>
+                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Parent's Details</h4>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Father's Name</strong>: {selectedViewCadet.fatherName || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Mother's Name</strong>: {selectedViewCadet.motherName || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Guardian's Name</strong>: {selectedViewCadet.guardianName || 'N/A'}</p>
+                                </div>
+
+                                <div>
+                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Medical & Camps Details</h4>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Blood Group</strong>: <span style={{ color: 'var(--danger)', fontWeight: '700' }}>{selectedViewCadet.bloodGroup || 'N/A'}</span></p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Allergies</strong>: {selectedViewCadet.allergies || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Medical Conditions</strong>: {selectedViewCadet.medicalConditions || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Regular Medications</strong>: {selectedViewCadet.medications || 'N/A'}</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Camps Attended</strong>: {selectedViewCadet.campsAttended || 'N/A'}</p>
+                                </div>
+                            </div>
+                            
+                            <div style={{ marginTop: '30px', borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                {!selectedViewCadet.approved && (
+                                    <button 
+                                        className="btn btn-primary" 
+                                        style={{ backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}
+                                        onClick={() => {
+                                            handleApproveCadet(selectedViewCadet._id);
+                                            setSelectedViewCadet(null);
+                                        }}
+                                    >
+                                        Approve Registration
+                                    </button>
+                                )}
+                                <button className="btn btn-outline" onClick={() => setSelectedViewCadet(null)}>Close Profile</button>
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>

@@ -149,6 +149,32 @@ const seedDB = async () => {
         await juoUser.save();
         console.log('JUO user seeded (juo@dtuncc.in / juo123).');
 
+        const cadetCadet = new Cadet({
+            cadetId: "C005",
+            name: "Cdt Rohit Sharma",
+            enrollmentNo: "DEL/SD/24/4805",
+            squadron: "alpha",
+            rank: "Cadet",
+            wing: "Army",
+            year: 1,
+            contact: "9876543214",
+            email: "cadet@dtuncc.in",
+            college: "DTU",
+            dliNo: "DL2024AL005",
+            bloodGroup: "O-",
+            approved: true
+        });
+        await cadetCadet.save();
+
+        const cadetUser = new User({
+            email: 'cadet@dtuncc.in',
+            password: 'cadet123',
+            role: 'cadet',
+            cadetId: cadetCadet._id
+        });
+        await cadetUser.save();
+        console.log('Cadet user seeded (cadet@dtuncc.in / cadet123).');
+
         // Seed Squadrons with 0 base points
         const squadronsToSeed = [
             { squadronId: 'alpha', name: 'Alpha Squadron', basePoints: 0 },
