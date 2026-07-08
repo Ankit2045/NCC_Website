@@ -27,13 +27,72 @@ function AppContent() {
     const [regName, setRegName] = useState('');
     const [regEnrollment, setRegEnrollment] = useState('');
     const [regSquadron, setRegSquadron] = useState('alpha');
-    const [regRank, setRegRank] = useState('Cdt');
-    const [regYear, setRegYear] = useState('2');
+    const [regRank, setRegRank] = useState('Cadet');
+    const [regYear, setRegYear] = useState('1');
     const [regContact, setRegContact] = useState('');
     const [regEmail, setRegEmail] = useState('');
     const [regPassword, setRegPassword] = useState('');
+
+    // Extended Registration Fields
+    const [regCollege, setRegCollege] = useState('DTU');
+    const [regDliNo, setRegDliNo] = useState('');
+    const [regBloodGroup, setRegBloodGroup] = useState('O+');
+    const [regCourse, setRegCourse] = useState('Btech');
+    const [regBranch, setRegBranch] = useState('');
+    const [regCollegeRollNo, setRegCollegeRollNo] = useState('');
+    const [regAcademicYear, setRegAcademicYear] = useState('1');
+    const [regAltContact, setRegAltContact] = useState('');
+    const [regAddress, setRegAddress] = useState('');
+    const [regResidenceType, setRegResidenceType] = useState('Hostel');
+    const [regCity, setRegCity] = useState('');
+    const [regPincode, setRegPincode] = useState('');
+    const [regFatherName, setRegFatherName] = useState('');
+    const [regMotherName, setRegMotherName] = useState('');
+    const [regGuardianName, setRegGuardianName] = useState('');
+    const [regAllergies, setRegAllergies] = useState('');
+    const [regMedicalConditions, setRegMedicalConditions] = useState('');
+    const [regMedications, setRegMedications] = useState('');
+    const [regCampsAttended, setRegCampsAttended] = useState('');
+    const [regOtherDetails, setRegOtherDetails] = useState('');
+
+    // OTP states
+    const [emailOtpSent, setEmailOtpSent] = useState(false);
+    const [emailOtpVerified, setEmailOtpVerified] = useState(false);
+    const [emailOtpInput, setEmailOtpInput] = useState('');
+    const [emailSentOtpCode, setEmailSentOtpCode] = useState('');
+    const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+    const [phoneOtpVerified, setPhoneOtpVerified] = useState(false);
+    const [phoneOtpInput, setPhoneOtpInput] = useState('');
+    const [phoneSentOtpCode, setPhoneSentOtpCode] = useState('');
+
+    // Notice Board & Camp States
+    const [noticeTitle, setNoticeTitle] = useState('');
+    const [noticeBody, setNoticeBody] = useState('');
+    const [noticeMsg, setNoticeMsg] = useState('');
+
+    const [campTitle, setCampTitle] = useState('');
+    const [campCategory, setCampCategory] = useState('National Level');
+    const [campLocation, setCampLocation] = useState('');
+    const [campDuration, setCampDuration] = useState('');
+    const [campDescription, setCampDescription] = useState('');
+    const [campDate, setCampDate] = useState('');
+    const [campMsg, setCampMsg] = useState('');
+    
+    // Dynamic Camps List
+    const [campsList, setCampsList] = useState([]);
+
     const [regMsg, setRegMsg] = useState('');
     const [regErrorMsg, setRegErrorMsg] = useState('');
+
+    const getRoleDisplayName = (role) => {
+        if (role === 'admin') return 'Unit Administrator';
+        if (role === 'ano') return 'Associate NCC Officer (ANO)';
+        if (role === 'suo') return 'Senior Under Officer (SUO)';
+        if (role === 'csm') return 'Company Sergeant Major (CSM)';
+        if (role === 'cqms') return 'Company Quartermaster Sergeant (CQMS)';
+        if (role === 'juo') return 'Junior Under Officer (JUO)';
+        return 'Cadet';
+    };
 
     // Admin Forms State
     const [editingCadetId, setEditingCadetId] = useState(null);
@@ -84,6 +143,9 @@ function AppContent() {
 
             const annRes = await fetch('/api/announcements');
             if (annRes.ok) setAnnouncements(await annRes.json());
+
+            const campRes = await fetch('/api/camps');
+            if (campRes.ok) setCampsList(await campRes.json());
         } catch (err) {
             console.error('Error fetching public data:', err);
         }
@@ -166,13 +228,107 @@ function AppContent() {
         }
     };
 
+    const handleSendEmailOtp = async () => {
+        if (!regEmail) {
+            alert('Please enter your Mail ID first.');
+            return;
+        }
+        try {
+            const res = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: regEmail })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setEmailOtpSent(true);
+                setEmailSentOtpCode(data.otp);
+                alert(`Simulated Email OTP Sent! Copy Code: ${data.otp}`);
+            } else {
+                alert(data.message || 'Failed to send OTP');
+            }
+        } catch (err) {
+            alert('Error sending OTP');
+        }
+    };
+
+    const handleVerifyEmailOtp = async () => {
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: regEmail, otp: emailOtpInput })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setEmailOtpVerified(true);
+                alert('Email verified successfully!');
+            } else {
+                alert(data.message || 'Verification failed');
+            }
+        } catch (err) {
+            alert('Error verifying OTP');
+        }
+    };
+
+    const handleSendPhoneOtp = async () => {
+        if (!regContact) {
+            alert('Please enter your Mobile Number first.');
+            return;
+        }
+        try {
+            const res = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: regContact })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setPhoneOtpSent(true);
+                setPhoneSentOtpCode(data.otp);
+                alert(`Simulated Mobile OTP Sent! Copy Code: ${data.otp}`);
+            } else {
+                alert(data.message || 'Failed to send OTP');
+            }
+        } catch (err) {
+            alert('Error sending OTP');
+        }
+    };
+
+    const handleVerifyPhoneOtp = async () => {
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: regContact, otp: phoneOtpInput })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setPhoneOtpVerified(true);
+                alert('Mobile number verified successfully!');
+            } else {
+                alert(data.message || 'Verification failed');
+            }
+        } catch (err) {
+            alert('Error verifying OTP');
+        }
+    };
+
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
         setRegMsg('');
         setRegErrorMsg('');
 
-        if (!regEmail.endsWith('@dtuncc.in')) {
-            setRegErrorMsg('Registration is restricted to official @dtuncc.in email domains.');
+        if (!emailOtpVerified) {
+            setRegErrorMsg('Please verify your Mail ID with OTP.');
+            return;
+        }
+        if (!phoneOtpVerified) {
+            setRegErrorMsg('Please verify your Mobile Number with OTP.');
+            return;
+        }
+        if (!regDliNo || (!regDliNo.startsWith('DL2024') && !regDliNo.startsWith('DL2025'))) {
+            setRegErrorMsg('DLI Number must begin with either DL2024 or DL2025.');
             return;
         }
 
@@ -189,22 +345,153 @@ function AppContent() {
                     year: parseInt(regYear),
                     contact: regContact,
                     email: regEmail,
-                    password: regPassword
+                    password: regPassword,
+                    college: regCollege,
+                    dliNo: regDliNo,
+                    bloodGroup: regBloodGroup,
+                    course: regCourse,
+                    branch: regBranch,
+                    collegeRollNo: regCollegeRollNo,
+                    academicYear: regAcademicYear,
+                    altContact: regAltContact,
+                    address: regAddress,
+                    residenceType: regResidenceType,
+                    city: regCity,
+                    pincode: regPincode,
+                    fatherName: regFatherName,
+                    motherName: regMotherName,
+                    guardianName: regGuardianName,
+                    allergies: regAllergies,
+                    medicalConditions: regMedicalConditions,
+                    medications: regMedications,
+                    campsAttended: regCampsAttended,
+                    otherDetails: regOtherDetails
                 })
             });
             const data = await res.json();
             if (res.ok) {
-                setRegMsg(`Registration successful! You can now log in using your official email.`);
+                setRegMsg(`Registration successful! Your application is pending review by the Admin/ANO.`);
                 setRegName('');
                 setRegEnrollment('');
                 setRegContact('');
                 setRegEmail('');
                 setRegPassword('');
+                setRegDliNo('');
+                setRegBranch('');
+                setRegCollegeRollNo('');
+                setRegAltContact('');
+                setRegAltContact('');
+                setRegAddress('');
+                setRegCity('');
+                setRegPincode('');
+                setRegFatherName('');
+                setRegMotherName('');
+                setRegGuardianName('');
+                setRegAllergies('');
+                setRegMedicalConditions('');
+                setRegMedications('');
+                setRegCampsAttended('');
+                setRegOtherDetails('');
+                setEmailOtpSent(false);
+                setEmailOtpVerified(false);
+                setEmailOtpInput('');
+                setPhoneOtpSent(false);
+                setPhoneOtpVerified(false);
+                setPhoneOtpInput('');
             } else {
                 setRegErrorMsg(data.message || 'Registration failed');
             }
         } catch (err) {
             setRegErrorMsg('Error contacting backend server.');
+        }
+    };
+
+    const handleNoticeSubmit = async (e) => {
+        e.preventDefault();
+        setNoticeMsg('');
+        if (!noticeTitle || !noticeBody) return;
+
+        try {
+            const author = cadet ? `${cadet.rank} ${cadet.name}` : (user.role === 'admin' ? 'Unit Administrator' : user.role.toUpperCase());
+            const res = await fetch('/api/announcements', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: noticeTitle,
+                    body: noticeBody,
+                    postedBy: author,
+                    date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setNoticeMsg('Notice posted successfully to Home Board!');
+                setNoticeTitle('');
+                setNoticeBody('');
+                // reload notices
+                const annRes = await fetch('/api/announcements');
+                if (annRes.ok) setAnnouncements(await annRes.json());
+            } else {
+                alert(data.message || 'Failed to post notice');
+            }
+        } catch (err) {
+            console.error('Error posting notice:', err);
+        }
+    };
+
+    const handleDeleteNotice = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this notice?')) return;
+        try {
+            const res = await fetch(`/api/announcements/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                alert('Notice deleted successfully.');
+                // reload notices
+                const annRes = await fetch('/api/announcements');
+                if (annRes.ok) setAnnouncements(await annRes.json());
+            } else {
+                alert('Failed to delete notice.');
+            }
+        } catch (err) {
+            console.error('Error deleting notice:', err);
+        }
+    };
+
+    const handleCampSubmit = async (e) => {
+        e.preventDefault();
+        setCampMsg('');
+        if (!campTitle || !campCategory || !campLocation) return;
+
+        try {
+            const res = await fetch('/api/camps', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: campTitle,
+                    category: campCategory,
+                    location: campLocation,
+                    duration: campDuration,
+                    description: campDescription,
+                    date: campDate
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setCampMsg('Camp added successfully to Camps Directory!');
+                setCampTitle('');
+                setCampLocation('');
+                setCampDuration('');
+                setCampDescription('');
+                setCampDate('');
+                // reload camps list
+                const campRes = await fetch('/api/camps');
+                if (campRes.ok) setCampsList(await campRes.json());
+            } else {
+                alert(data.message || 'Failed to add camp');
+            }
+        } catch (err) {
+            console.error('Error adding camp:', err);
         }
     };
 
@@ -466,7 +753,8 @@ function AppContent() {
             {/* Header / Brand Nav */}
             {/* Header / Brand Nav */}
             <header className="app-header">
-                <div className="logo-container" onClick={() => setCurrentTab('home')} style={{ cursor: 'pointer' }}>
+                <div className="logo-container" onClick={() => setCurrentTab('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src="dtu_ncc_logo_transparent.png" alt="DTU NCC Logo" className="logo-img" style={{ height: '45px', width: 'auto' }} />
                     <div className="logo-text">
                         <h1>1 DBN NCC</h1>
                         <p>Delhi Technological University</p>
@@ -479,7 +767,12 @@ function AppContent() {
                         <li><a href="#" className={`nav-link ${currentTab === 'about' ? 'active' : ''}`} onClick={() => setCurrentTab('about')}>About Us</a></li>
                         <li><a href="#" className={`nav-link ${currentTab === 'camps' ? 'active' : ''}`} onClick={() => setCurrentTab('camps')}>Camps</a></li>
                         <li><a href="#" className={`nav-link ${currentTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setCurrentTab('leaderboard')}>Leaderboard</a></li>
+                        <li><a href="#" className={`nav-link ${currentTab === 'rankpanel' ? 'active' : ''}`} onClick={() => setCurrentTab('rankpanel')}>Rank Panel</a></li>
                         <li><a href="#" className={`nav-link ${currentTab === 'contact' ? 'active' : ''}`} onClick={() => setCurrentTab('contact')}>Notices & Help</a></li>
+                        
+                        {!user && (
+                            <li><a href="#" className={`nav-link ${currentTab === 'register' ? 'active' : ''}`} onClick={() => setCurrentTab('register')}>Cadet Registration</a></li>
+                        )}
                         
                         {user && (
                             <li>
@@ -488,7 +781,7 @@ function AppContent() {
                                     className={`nav-link ${currentTab === 'dashboard' ? 'active' : ''}`} 
                                     onClick={() => setCurrentTab('dashboard')}
                                 >
-                                    {user.role === 'admin' ? 'Admin Portal' : 'My Dashboard'}
+                                    {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
                                 </a>
                             </li>
                         )}
@@ -496,7 +789,7 @@ function AppContent() {
                         <li>
                             {user ? (
                                 <button className="btn btn-outline" onClick={() => { logout(); setCurrentTab('home'); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                                    <i className="fa-solid fa-right-from-bracket"></i> Logout ({user.role === 'admin' ? 'ANO/CQMS' : (cadet?.name || 'Cadet')})
+                                    <i className="fa-solid fa-right-from-bracket"></i> Logout ({user.role === 'admin' ? 'Admin' : user.role === 'ano' ? 'ANO' : user.role === 'suo' ? 'SUO' : user.role === 'csm' ? 'CSM' : user.role === 'cqms' ? 'CQMS' : user.role === 'juo' ? 'JUO' : (cadet?.name || 'Cadet')})
                                 </button>
                             ) : (
                                 <button className="btn btn-primary" onClick={() => { setLoginError(''); setCurrentTab('login'); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
@@ -515,36 +808,44 @@ function AppContent() {
                     <div className="view-section active">
                         <div className="hero-section">
                             <div className="hero-content">
-                                <div className="hero-tagline">1 Delhi Battalion (1 DBN) NCC Subunit</div>
+                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '30px', marginBottom: '25px', width: '100%' }}>
+                                    <img src="dtu_ncc_logo_transparent.png" alt="DTU NCC Logo" style={{ height: '220px', width: 'auto', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.12))' }} />
+                                    <img src="ncc_logo_transparent.png" alt="NCC Logo" style={{ height: '220px', width: 'auto', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.12))' }} />
+                                </div>
+                                <div className="hero-tagline">1 Delhi Battalion (1 DBN) NCC Unit</div>
                                 <h1 className="hero-title">DTU Cadet Portal</h1>
                                 <p className="hero-desc">Building character, comradeship, discipline, a secular outlook, the spirit of adventure, and ideals of selfless service among the youth of the Delhi Technological University detachment.</p>
                                 <div className="hero-buttons">
-                                    <button className="btn btn-primary" onClick={() => setCurrentTab('camps')}><i class="fa-solid fa-tent"></i> Explore Camps</button>
-                                    <button className="btn btn-outline" onClick={() => setCurrentTab('leaderboard')}><i class="fa-solid fa-trophy"></i> Championship Standings</button>
+                                    <button className="btn btn-primary" onClick={() => setCurrentTab('camps')}><i className="fa-solid fa-tent"></i> Explore Camps</button>
+                                    <button className="btn btn-outline" onClick={() => setCurrentTab('leaderboard')}><i className="fa-solid fa-trophy"></i> Championship Standings</button>
+                                    {!user && (
+                                        <>
+                                            <button className="btn btn-outline" onClick={() => { setLoginError(''); setCurrentTab('login'); }} style={{ borderColor: 'var(--secondary)', color: 'var(--secondary)' }}>
+                                                <i className="fa-solid fa-right-to-bracket"></i> Cadet Login
+                                            </button>
+                                            <button className="btn btn-outline" onClick={() => setCurrentTab('register')} style={{ borderColor: 'var(--saffron)', color: 'var(--saffron)' }}>
+                                                <i className="fa-solid fa-user-plus"></i> Cadet Registration
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="stats-section">
-                            <div className="container">
-                                <div className="stats-grid">
-                                    <div className="stat-card">
-                                        <div className="stat-number">150+</div>
-                                        <div className="stat-label">Enrolled Cadets</div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <div className="stat-number">4</div>
-                                        <div className="stat-label">Squadrons</div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <div className="stat-number">8+</div>
-                                        <div className="stat-label">Annual Camps</div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <div className="stat-number">2026-27</div>
-                                        <div className="stat-label">Championship Year</div>
-                                    </div>
-                                </div>
+                        <div className="slogan-ticker-section">
+                            <div className="slogan-ticker-wrapper">
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-star"></i> Unity and Discipline</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-shield-halved"></i> Service Before Self</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-flag"></i> Nation First, Always First</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-crosshairs"></i> Ekta aur Anushasan</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-user-shield"></i> Duty, Honor, Country</div>
+                            </div>
+                            <div className="slogan-ticker-wrapper" aria-hidden="true">
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-star"></i> Unity and Discipline</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-shield-halved"></i> Service Before Self</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-flag"></i> Nation First, Always First</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-crosshairs"></i> Ekta aur Anushasan</div>
+                                <div className="slogan-ticker-item"><i className="fa-solid fa-user-shield"></i> Duty, Honor, Country</div>
                             </div>
                         </div>
 
@@ -552,6 +853,15 @@ function AppContent() {
                             <div className="motto-box">
                                 <div className="motto-title">NCC Motto</div>
                                 <div className="motto-text">"Unity and Discipline" (Ekta aur Anushasan)</div>
+                            </div>
+
+                            <div className="motto-box" style={{ borderLeft: '5px solid var(--primary)', borderRight: '5px solid var(--primary)', marginTop: '-25px', marginBottom: '45px' }}>
+                                <div className="motto-title" style={{ fontSize: '1.4rem' }}>Aims of NCC</div>
+                                <ul style={{ textAlign: 'left', fontSize: '0.92rem', color: 'var(--text-main)', lineHeight: '1.6', paddingLeft: '20px', listStyleType: 'square', display: 'inline-block', margin: '0 auto', maxWidth: '800px' }}>
+                                    <li style={{ marginBottom: '8px' }}>To develop character, comradeship, discipline, leadership, secular outlook, spirit of adventure, and ideals of selfless service among the youth of the country.</li>
+                                    <li style={{ marginBottom: '8px' }}>To create a human resource of organized, trained and motivated youth, to provide leadership in all walks of life and be always available for the service of the nation.</li>
+                                    <li>To provide a suitable environment to motivate the youth to take up a career in the Armed Forces.</li>
+                                </ul>
                             </div>
 
                             <div className="section-header">
@@ -580,33 +890,47 @@ function AppContent() {
 
                         <div className="container home-row">
                             <div className="section-header">
-                                <h2>Unit Gallery</h2>
-                                <p>Moments of training, camps, and achievements of 1 DBN DTU Cadets</p>
+                                <h2>Commanding Leadership of NCC</h2>
+                                <p>The distinguished officers heading the National Cadet Corps command chain</p>
                             </div>
                             
-                            <div className="gallery-grid">
-                                <div className="gallery-card">
-                                    <img src="gallery/drill.jpg" alt="Parade Drill Training" />
-                                    <div className="gallery-overlay">
-                                        <div className="gallery-title">Parade Drill Training</div>
-                                        <div className="gallery-desc">DTU cadets practicing synchronized platoon drill movements under 1 DBN.</div>
-                                    </div>
+                            <div className="gallery-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+                                <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                                    <img src="gallery/dg_virendra_vats.jpg" alt="Lt Gen Virendra Vats" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
+                                    <span className="badge badge-warning" style={{ backgroundColor: 'var(--saffron)', color: '#fff', fontSize: '0.72rem', padding: '4px 8px' }}>Director General (DG)</span>
+                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Lt Gen Virendra Vats, SM, VSM</h4>
+                                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>DG NCC Headquarters, New Delhi</p>
                                 </div>
                                 
-                                <div className="gallery-card">
-                                    <div style={{ height: '100%', width: '100%', background: 'linear-gradient(135deg, var(--army-red) 0%, var(--primary) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', padding: '20px', textAlign: 'center', borderRadius: 'var(--radius-lg)' }}>
-                                        <i className="fa-solid fa-tent" style={{ fontSize: '2.5rem', marginBottom: '10px', color: 'var(--secondary)' }}></i>
-                                        <h4 style={{ marginBottom: '8px', fontWeight: '700' }}>Combined Annual Training Camp</h4>
-                                        <p style={{ fontSize: '0.8rem', opacity: '0.9' }}>10 days of rigorous physical training, weapon inspections, and cultural competitions at the annual CATC.</p>
-                                    </div>
+                                <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                                    <img src="gallery/adg_avatar.jpg" alt="Maj Gen Ravinder Kumar" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
+                                    <span className="badge badge-success" style={{ fontSize: '0.72rem', padding: '4px 8px' }}>Addl Director General (ADG)</span>
+                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Maj Gen Ravinder Kumar, SM, VSM</h4>
+                                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>ADG Delhi Directorate</p>
                                 </div>
-                                
-                                <div className="gallery-card">
-                                    <div style={{ height: '100%', width: '100%', background: 'linear-gradient(135deg, var(--primary) 0%, var(--navy-blue) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexDirection: 'column', padding: '20px', textAlign: 'center', borderRadius: 'var(--radius-lg)' }}>
-                                        <i className="fa-solid fa-bullseye" style={{ fontSize: '2.5rem', marginBottom: '10px', color: 'var(--secondary)' }}></i>
-                                        <h4 style={{ marginBottom: '8px', fontWeight: '700' }}>Weapon Firing Practice</h4>
-                                        <p style={{ fontSize: '0.8rem', opacity: '0.9' }}>Firing simulation and range inspection training sessions at Delhi Cantonment range ground.</p>
+
+                                <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                                    <img src="gallery/ddg_avatar.jpg" alt="Brig PS Chonkar" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
+                                    <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '4px 8px' }}>Group Commander</span>
+                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Brig PS Chonkar</h4>
+                                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>Group Commander, Delhi Group 'B'</p>
+                                </div>
+
+                                <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                                    <img src="gallery/co_avatar.jpg" alt="Col Gurpreet Singh" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
+                                    <span className="badge" style={{ backgroundColor: 'var(--navy-blue)', color: '#fff', fontSize: '0.72rem', padding: '4px 8px' }}>Commanding Officer (CO)</span>
+                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Col Gurpreet Singh</h4>
+                                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>CO 1 Delhi Battalion NCC</p>
+                                </div>
+
+                                <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                                    <div style={{ width: '100%', height: '240px', borderRadius: 'var(--radius-sm)', marginBottom: '15px', backgroundColor: '#f0f4f8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--border)' }}>
+                                        <i className="fa-solid fa-user-shield" style={{ fontSize: '3rem', color: 'var(--text-muted)' }}></i>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '10px' }}>Photo Awaiting</span>
                                     </div>
+                                    <span className="badge" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.72rem', padding: '4px 8px' }}>Administrative Officer (AO)</span>
+                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Lt Col NS Mann</h4>
+                                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>AO 1 Delhi Battalion NCC</p>
                                 </div>
                             </div>
                         </div>
@@ -640,83 +964,7 @@ function AppContent() {
                             </div>
                         </div>
 
-                        {/* Self-Registration Form Section */}
-                        <div className="container home-row">
-                            <div className="profile-card" style={{ padding: '30px', textAlign: 'left', maxWidth: '800px', margin: '0 auto' }}>
-                                <h3 style={{ color: 'var(--primary)', fontSize: '1.25rem', textTransform: 'uppercase', marginBottom: '10px', fontWeight: '700', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
-                                    <i className="fa-solid fa-user-plus"></i> Cadet Self-Registration Portal
-                                </h3>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
-                                    If you are an active 1 DBN cadet at DTU, register your profile below. Self-registration is restricted to official email addresses ending with <strong>`@dtuncc.in`</strong>.
-                                </p>
 
-                                {regMsg && (
-                                    <div className="alert alert-success" style={{ marginBottom: '20px', fontSize: '0.88rem' }}>
-                                        <i className="fa-solid fa-circle-check"></i> {regMsg}
-                                    </div>
-                                )}
-                                {regErrorMsg && (
-                                    <div className="alert alert-danger" style={{ marginBottom: '20px', fontSize: '0.88rem' }}>
-                                        <i className="fa-solid fa-triangle-exclamation"></i> {regErrorMsg}
-                                    </div>
-                                )}
-
-                                <form onSubmit={handleRegisterSubmit}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
-                                            <input type="text" className="form-control" placeholder="E.g., Ankit Singh" value={regName} onChange={(e) => setRegName(e.target.value)} required />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Regimental No *</label>
-                                            <input type="text" className="form-control" placeholder="E.g., DEL/SD/24/4831" value={regEnrollment} onChange={(e) => setRegEnrollment(e.target.value)} required />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Squadron Platoon *</label>
-                                            <select className="form-control" value={regSquadron} onChange={(e) => setRegSquadron(e.target.value)} required>
-                                                <option value="alpha">Alpha</option>
-                                                <option value="bravo">Bravo</option>
-                                                <option value="charlie">Charlie</option>
-                                                <option value="delta">Delta</option>
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Rank *</label>
-                                            <select className="form-control" value={regRank} onChange={(e) => setRegRank(e.target.value)} required>
-                                                <option value="Cdt">Cadet (Cdt)</option>
-                                                <option value="Lcp">Lance Corporal (Lcp)</option>
-                                                <option value="Cpl">Corporal (Cpl)</option>
-                                                <option value="Sgt">Sergeant (Sgt)</option>
-                                                <option value="JUO">Junior Under Officer (JUO)</option>
-                                                <option value="SUO">Senior Under Officer (SUO)</option>
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Cadet Year *</label>
-                                            <select className="form-control" value={regYear} onChange={(e) => setRegYear(e.target.value)} required>
-                                                <option value="2">2nd Year</option>
-                                                <option value="3">3rd Year</option>
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Contact Number *</label>
-                                            <input type="text" className="form-control" placeholder="10-digit phone number" value={regContact} onChange={(e) => setRegContact(e.target.value)} required />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Official Email (@dtuncc.in) *</label>
-                                            <input type="email" className="form-control" placeholder="E.g., name@dtuncc.in" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Choose Password *</label>
-                                            <input type="password" className="form-control" placeholder="Minimum 6 characters" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
-                                        </div>
-                                    </div>
-                                    <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '20px', padding: '12px' }}>
-                                        <i className="fa-solid fa-user-check"></i> Register Profile
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
 
                         <div className="container home-row">
                             <div className="cta-banner">
@@ -733,17 +981,17 @@ function AppContent() {
                     <div className="view-section active">
                         <div className="container" style={{ paddingTop: '40px' }}>
                             <div className="section-header">
-                                <h2>About DTU NCC Subunit</h2>
+                                <h2>About DTU NCC Unit</h2>
                                 <p>Developing disciplined citizens and leaders of tomorrow</p>
                             </div>
                             
                             <div className="about-intro-grid">
                                 <div>
                                     <p style={{ fontSize: '1.05rem', lineHeight: '1.7', color: 'var(--text)', marginBottom: '15px' }}>
-                                        The National Cadet Corps Subunit at Delhi Technological University (DTU) is an active part of **1 Delhi Battalion (1 DBN) NCC**. The unit fosters leadership qualities, national cohesion, discipline, and a strong sense of service.
+                                        The National Cadet Corps Unit at Delhi Technological University (DTU) is an active part of **1 Delhi Battalion (1 DBN) NCC**. The unit fosters leadership qualities, national cohesion, discipline, and a strong sense of service.
                                     </p>
                                     <p style={{ lineHeight: '1.6', color: 'var(--text-muted)' }}>
-                                        Through military drills, weapons education, firing ranges, physical endurance maps, and leadership camps, cadets are trained to handle challenging environments. The Subunit serves as a gateway for cadets aspiring to serve in the Indian Armed Forces.
+                                        Through military drills, weapons education, firing ranges, physical endurance maps, and leadership camps, cadets are trained to handle challenging environments. The Unit serves as a gateway for cadets aspiring to serve in the Indian Armed Forces.
                                     </p>
                                 </div>
                                 <div style={{ borderLeft: '4px solid var(--secondary)', paddingLeft: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -789,35 +1037,24 @@ function AppContent() {
                             </div>
 
                             <div className="camps-grid">
-                                <div className="camp-card">
-                                    <div className="camp-tag tag-army">National Level</div>
-                                    <h3 style={{ marginTop: '10px' }}>Republic Day Camp (RDC)</h3>
-                                    <p style={{ fontSize: '0.88rem', margin: '10px 0' }}>The pinnacle camp held at Cariappa Parade Ground, Delhi Cantonment. Cadets are selected to represent the Delhi Directorate in guard of honour and PM rally.</p>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                        <span><i className="fa-solid fa-calendar"></i> January (Annual)</span>
-                                        <span><i className="fa-solid fa-map-location-dot"></i> New Delhi</span>
+                                {campsList.map((c, idx) => (
+                                    <div className="camp-card" key={idx}>
+                                        <div className={`camp-tag ${c.category.toLowerCase().includes('national') ? 'tag-army' : c.category.toLowerCase().includes('compulsory') ? 'tag-navy' : 'tag-airforce'}`}>
+                                            {c.category}
+                                        </div>
+                                        <h3 style={{ marginTop: '10px' }}>{c.title}</h3>
+                                        <p style={{ fontSize: '0.88rem', margin: '10px 0' }}>{c.description}</p>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                            <span><i className="fa-solid fa-calendar"></i> {c.duration || c.date}</span>
+                                            <span><i className="fa-solid fa-map-location-dot"></i> {c.location}</span>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="camp-card">
-                                    <div className="camp-tag tag-army">Adventure</div>
-                                    <h3 style={{ marginTop: '10px' }}>Thal Sainik Camp (TSC)</h3>
-                                    <p style={{ fontSize: '0.88rem', margin: '10px 0' }}>Specialized military camp focusing on map reading, obstacle clearance courses, health and hygiene, and rifle shooting matches.</p>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                        <span><i className="fa-solid fa-calendar"></i> Sept-Oct</span>
-                                        <span><i className="fa-solid fa-map-location-dot"></i> DG NCC Delhi</span>
+                                ))}
+                                {campsList.length === 0 && (
+                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', gridColumn: '1 / -1', textAlign: 'center', padding: '30px' }}>
+                                        No camps currently published in the Unit directory.
                                     </div>
-                                </div>
-
-                                <div className="camp-card">
-                                    <div className="camp-tag tag-navy">Annual Compulsory</div>
-                                    <h3 style={{ marginTop: '10px' }}>Combined Annual Training Camp (CATC)</h3>
-                                    <p style={{ fontSize: '0.88rem', margin: '10px 0' }}>Mandatory 10-day camp for second and third-year cadets. Required for eligibility to appear for NCC 'B' and 'C' Certificate exams.</p>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                        <span><i className="fa-solid fa-calendar"></i> Variable Dates</span>
-                                        <span><i className="fa-solid fa-map-location-dot"></i> Local Battalion Ground</span>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -926,13 +1163,24 @@ function AppContent() {
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '40px' }}>
                                 <div>
-                                    <h3 style={{ marginBottom: '20px' }}><i className="fa-solid fa-bullhorn"></i> Official Subunit Bulletin</h3>
+                                    <h3 style={{ marginBottom: '20px' }}><i className="fa-solid fa-bullhorn"></i> Official Unit Bulletin</h3>
                                     <div className="announcements-feed">
                                         {announcements.map((n, i) => (
                                             <div className="announcement-item" key={i} style={{ marginBottom: '20px' }}>
                                                 <div className="announcement-main">
-                                                    <div className="announcement-title">{n.title}</div>
-                                                    <div className="announcement-body">{n.body}</div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
+                                                        <div className="announcement-title">{n.title}</div>
+                                                        {user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                                                            <button 
+                                                                className="btn btn-outline" 
+                                                                style={{ padding: '4px 8px', fontSize: '0.7rem', borderColor: 'var(--danger)', color: 'var(--danger)', display: 'inline-flex', alignItems: 'center', gap: '3px', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
+                                                                onClick={() => handleDeleteNotice(n._id)}
+                                                            >
+                                                                <i className="fa-solid fa-trash-can"></i> Delete
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    <div className="announcement-body" style={{ marginTop: '5px' }}>{n.body}</div>
                                                 </div>
                                                 <div className="announcement-meta">
                                                     <span className="date"><i className="fa-regular fa-calendar"></i> {n.date}</span>
@@ -952,9 +1200,9 @@ function AppContent() {
                                 </div>
 
                                 <div className="profile-card" style={{ padding: '25px', textAlign: 'left', alignSelf: 'start' }}>
-                                    <h3 style={{ color: 'var(--primary)', marginBottom: '15px' }}><i className="fa-solid fa-building-shield"></i> ANO Subunit Office</h3>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Associate NCC Officer (ANO)</strong>: Lt. Dr. R.S. Kovind</p>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Office Location</strong>: Room 104, Gymnasium Building, DTU East Campus</p>
+                                    <h3 style={{ color: 'var(--primary)', marginBottom: '15px' }}><i className="fa-solid fa-building-shield"></i> ANO Office</h3>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Associate NCC Officer (ANO)</strong>: Lt. Dr. Raghveder Gautam</p>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Office Location</strong>: Room 104, Gymnasium Building, DTU Campus</p>
                                     <p style={{ fontSize: '0.9rem', marginBottom: '20px' }}><strong>Training Schedule</strong>: Every Saturday (0800 hrs to 1300 hrs)</p>
                                     
                                     <div style={{ borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
@@ -1021,25 +1269,460 @@ function AppContent() {
                     </div>
                 )}
 
+                {/* 9. Cadet Registration View */}
+                {currentTab === 'register' && !user && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                            <div className="profile-card" style={{ padding: '35px', textAlign: 'left', maxWidth: '850px', margin: '0 auto' }}>
+                                <h3 style={{ color: 'var(--primary)', fontSize: '1.4rem', textTransform: 'uppercase', marginBottom: '10px', fontWeight: '700', borderBottom: '2px solid var(--border)', paddingBottom: '8px' }}>
+                                    <i className="fa-solid fa-user-plus"></i> Cadet Self-Registration Portal
+                                </h3>
+                                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '25px' }}>
+                                    Register your profile to gain access to the Cadet portal. Ensure you verify your Email and Mobile Number with simulated OTP codes.
+                                </p>
+
+                                {regMsg && (
+                                    <div className="alert alert-success" style={{ marginBottom: '20px', fontSize: '0.88rem' }}>
+                                        <i className="fa-solid fa-circle-check"></i> {regMsg}
+                                    </div>
+                                )}
+                                {regErrorMsg && (
+                                    <div className="alert alert-danger" style={{ marginBottom: '20px', fontSize: '0.88rem' }}>
+                                        <i className="fa-solid fa-triangle-exclamation"></i> {regErrorMsg}
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleRegisterSubmit}>
+                                    {/* SECTION 1: Basic Information */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '25px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.92rem', textTransform: 'uppercase' }}>Basic Information</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
+                                                <input type="text" className="form-control" placeholder="E.g., Ankit Kumar" value={regName} onChange={(e) => setRegName(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Regimental No *</label>
+                                                <input type="text" className="form-control" placeholder="E.g., DEL/SD/24/4831" value={regEnrollment} onChange={(e) => setRegEnrollment(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>DLI Number * (Begins with DL2024 or DL2025)</label>
+                                                <input type="text" className="form-control" placeholder="E.g., DL2024SD12345" value={regDliNo} onChange={(e) => setRegDliNo(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Squadron Platoon *</label>
+                                                <select className="form-control" value={regSquadron} onChange={(e) => setRegSquadron(e.target.value)} required>
+                                                    <option value="alpha">Alpha</option>
+                                                    <option value="bravo">Bravo</option>
+                                                    <option value="charlie">Charlie</option>
+                                                    <option value="delta">Delta</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Rank *</label>
+                                                <select className="form-control" value={regRank} onChange={(e) => setRegRank(e.target.value)} required>
+                                                    <option value="Cadet">Cadet (Cdt)</option>
+                                                    <option value="L/Cpl">Lance Corporal (L/Cpl)</option>
+                                                    <option value="Cpl">Corporal (Cpl)</option>
+                                                    <option value="Sgt">Sergeant (Sgt)</option>
+                                                    <option value="JUO">Junior Under Officer (JUO)</option>
+                                                    <option value="SUO">Senior Under Officer (SUO)</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Cadet Year *</label>
+                                                <select className="form-control" value={regYear} onChange={(e) => setRegYear(e.target.value)} required>
+                                                    <option value="1">1st Year</option>
+                                                    <option value="2">2nd Year</option>
+                                                    <option value="3">3rd Year</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Mail ID *</label>
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    <input 
+                                                        type="email" 
+                                                        className="form-control" 
+                                                        placeholder="E.g., personal@gmail.com" 
+                                                        value={regEmail} 
+                                                        onChange={(e) => setRegEmail(e.target.value)} 
+                                                        disabled={emailOtpVerified}
+                                                        required 
+                                                    />
+                                                    {!emailOtpVerified ? (
+                                                        <button type="button" className="btn btn-outline" onClick={handleSendEmailOtp} style={{ whiteSpace: 'nowrap' }}>
+                                                            {emailOtpSent ? 'Resend OTP' : 'Send OTP'}
+                                                        </button>
+                                                    ) : (
+                                                        <span style={{ color: 'var(--success)', alignSelf: 'center', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                            <i className="fa-solid fa-circle-check"></i> Verified
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {emailOtpSent && !emailOtpVerified && (
+                                                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                                        <input 
+                                                            type="text" 
+                                                            className="form-control" 
+                                                            placeholder="Enter 6-Digit Email OTP" 
+                                                            value={emailOtpInput} 
+                                                            onChange={(e) => setEmailOtpInput(e.target.value)} 
+                                                        />
+                                                        <button type="button" className="btn btn-primary" onClick={handleVerifyEmailOtp}>Verify</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Password *</label>
+                                                <input type="password" className="form-control" placeholder="Choose a secure password (min 6 characters)" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 2: Academic Details */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '25px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.92rem', textTransform: 'uppercase' }}>Academic Details (Optional)</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Course</label>
+                                                <select className="form-control" value={regCourse} onChange={(e) => setRegCourse(e.target.value)}>
+                                                    <option value="Btech">B.Tech</option>
+                                                    <option value="BSMS">BS-MS</option>
+                                                    <option value="BArch">B.Arch</option>
+                                                    <option value="BSc">B.Sc</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Branch</label>
+                                                <input type="text" className="form-control" placeholder="E.g., Computer Science, Biotech" value={regBranch} onChange={(e) => setRegBranch(e.target.value)} />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>College Roll Number</label>
+                                                <input type="text" className="form-control" placeholder="E.g., 2K24/CO/123" value={regCollegeRollNo} onChange={(e) => setRegCollegeRollNo(e.target.value)} />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Academic Year</label>
+                                                <select className="form-control" value={regAcademicYear} onChange={(e) => setRegAcademicYear(e.target.value)}>
+                                                    <option value="1">1st Year</option>
+                                                    <option value="2">2nd Year</option>
+                                                    <option value="3">3rd Year</option>
+                                                    <option value="4">4th Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 3: Contact Information */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '25px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.92rem', textTransform: 'uppercase' }}>Contact Information</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Mobile Number *</label>
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    <input 
+                                                        type="text" 
+                                                        className="form-control" 
+                                                        placeholder="10-digit mobile number" 
+                                                        value={regContact} 
+                                                        onChange={(e) => setRegContact(e.target.value)} 
+                                                        disabled={phoneOtpVerified}
+                                                        required 
+                                                    />
+                                                    {!phoneOtpVerified ? (
+                                                        <button type="button" className="btn btn-outline" onClick={handleSendPhoneOtp} style={{ whiteSpace: 'nowrap' }}>
+                                                            {phoneOtpSent ? 'Resend OTP' : 'Send OTP'}
+                                                        </button>
+                                                    ) : (
+                                                        <span style={{ color: 'var(--success)', alignSelf: 'center', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                            <i className="fa-solid fa-circle-check"></i> Verified
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {phoneOtpSent && !phoneOtpVerified && (
+                                                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                                        <input 
+                                                            type="text" 
+                                                            className="form-control" 
+                                                            placeholder="Enter 6-Digit Mobile OTP" 
+                                                            value={phoneOtpInput} 
+                                                            onChange={(e) => setPhoneOtpInput(e.target.value)} 
+                                                        />
+                                                        <button type="button" className="btn btn-primary" onClick={handleVerifyPhoneOtp}>Verify</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Alternate Mobile Number</label>
+                                                <input type="text" className="form-control" placeholder="Parents/backup number" value={regAltContact} onChange={(e) => setRegAltContact(e.target.value)} />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel / Day Scholar *</label>
+                                                <select className="form-control" value={regResidenceType} onChange={(e) => setRegResidenceType(e.target.value)} required>
+                                                    <option value="Hostel">Hostel Resident</option>
+                                                    <option value="Day Scholar">Day Scholar</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Address *</label>
+                                                <input type="text" className="form-control" placeholder="House/Hostel name and room number" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>City *</label>
+                                                <input type="text" className="form-control" placeholder="E.g., New Delhi" value={regCity} onChange={(e) => setRegCity(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Pincode *</label>
+                                                <input type="text" className="form-control" placeholder="E.g., 110042" value={regPincode} onChange={(e) => setRegPincode(e.target.value)} required />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 4: Parent's Details */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '25px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.92rem', textTransform: 'uppercase' }}>Parent's / Guardian's Details</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Father's Name *</label>
+                                                <input type="text" className="form-control" placeholder="Father's full name" value={regFatherName} onChange={(e) => setRegFatherName(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Mother's Name *</label>
+                                                <input type="text" className="form-control" placeholder="Mother's full name" value={regMotherName} onChange={(e) => setRegMotherName(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Guardian's Name</label>
+                                                <input type="text" className="form-control" placeholder="Guardian's name (if applicable)" value={regGuardianName} onChange={(e) => setRegGuardianName(e.target.value)} />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 5: Medical Information */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '25px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.92rem', textTransform: 'uppercase' }}>Medical Information</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Blood Group *</label>
+                                                <select className="form-control" value={regBloodGroup} onChange={(e) => setRegBloodGroup(e.target.value)} required>
+                                                    <option value="A+">A+</option>
+                                                    <option value="A-">A-</option>
+                                                    <option value="B+">B+</option>
+                                                    <option value="B-">B-</option>
+                                                    <option value="AB+">AB+</option>
+                                                    <option value="AB-">AB-</option>
+                                                    <option value="O+">O+</option>
+                                                    <option value="O-">O-</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Allergies</label>
+                                                <input type="text" className="form-control" placeholder="E.g., Peanuts, Dust (if any)" value={regAllergies} onChange={(e) => setRegAllergies(e.target.value)} />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Existing Medical Conditions</label>
+                                                <input type="text" className="form-control" placeholder="E.g., Asthma, High BP" value={regMedicalConditions} onChange={(e) => setRegMedicalConditions(e.target.value)} />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Regular Medications</label>
+                                                <input type="text" className="form-control" placeholder="E.g., Inhalers, daily pills" value={regMedications} onChange={(e) => setRegMedications(e.target.value)} />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 6: Camps Details */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '25px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.92rem', textTransform: 'uppercase' }}>Camps Attended & Achievements</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>NCC Camps Attended</label>
+                                                <textarea className="form-control" placeholder="Name all the camps you have attended (e.g., CATC, TSC, RDC, EBSB, ALC)" rows="3" value={regCampsAttended} onChange={(e) => setRegCampsAttended(e.target.value)}></textarea>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Any Other Details / Achievements</label>
+                                                <textarea className="form-control" placeholder="NCC certificate exams passed, sports trophies, firing accolades, etc." rows="2" value={regOtherDetails} onChange={(e) => setRegOtherDetails(e.target.value)}></textarea>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '1rem', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.5px' }}>
+                                        <i className="fa-solid fa-user-check"></i> Submit Registration Application
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Rank Panel Tab View */}
+                {currentTab === 'rankpanel' && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                            <div className="section-header">
+                                <h2>Command Leadership Rank Panel (2026-27)</h2>
+                                <p>Hierarchy, NCO commands, and cadet leadership chain of 1 DBN NCC Unit, DTU</p>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '35px', maxWidth: '1000px', margin: '0 auto' }}>
+                                
+                                {/* 1. Supreme Command (ANO & SUO) */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                                    {/* ANO Card */}
+                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--saffron)' }}>
+                                        <div style={{ width: '90px', height: '110px', minWidth: '90px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <i className="fa-solid fa-user-tie" style={{ fontSize: '1.8rem', color: 'var(--text-muted)' }}></i>
+                                            <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '5px', textAlign: 'center' }}>Pending Photo</span>
+                                        </div>
+                                        <div style={{ textAlign: 'left' }}>
+                                            <span className="badge badge-warning" style={{ backgroundColor: 'var(--saffron)', color: '#fff', fontSize: '0.65rem' }}>Associate NCC Officer</span>
+                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Lt. Dr. Raghveder Gautam</h3>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Unit Commander & Officer in Charge</p>
+                                        </div>
+                                    </div>
+
+                                    {/* SUO Card */}
+                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--army-red)' }}>
+                                        <div style={{ width: '90px', height: '110px', minWidth: '90px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <i className="fa-solid fa-user-shield" style={{ fontSize: '1.8rem', color: 'var(--text-muted)' }}></i>
+                                            <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '5px', textAlign: 'center' }}>Pending Photo</span>
+                                        </div>
+                                        <div style={{ textAlign: 'left' }}>
+                                            <span className="badge badge-danger" style={{ backgroundColor: 'var(--army-red)', color: '#fff', fontSize: '0.65rem' }}>Senior Under Officer (SUO)</span>
+                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Piyush Kumar</h3>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Cadet Commander & Senior Command Representative</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 2. Junior Under Officers (JUO) */}
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                        Junior Under Officers (JUO)
+                                    </h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                        {["Ankit Kumar", "Abhinav Kumar", "Adamya Naorem", "Samarth Kadyan"].map((name, idx) => (
+                                            <div key={idx} className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--primary)' }}>
+                                                <div style={{ width: '60px', height: '75px', minWidth: '60px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <i className="fa-solid fa-user" style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}></i>
+                                                    <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
+                                                </div>
+                                                <div style={{ textAlign: 'left' }}>
+                                                    <div style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: '700' }}>Junior Under Officer</div>
+                                                    <h4 style={{ margin: '2px 0 0 0', fontSize: '0.88rem', fontWeight: '700' }}>{name}</h4>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 3. CSM & CQMS */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                                    {/* CSM */}
+                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
+                                        <div style={{ width: '70px', height: '85px', minWidth: '70px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <i className="fa-solid fa-user" style={{ fontSize: '1.3rem', color: 'var(--text-muted)' }}></i>
+                                            <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
+                                        </div>
+                                        <div style={{ textAlign: 'left' }}>
+                                            <div style={{ fontSize: '0.68rem', color: 'var(--secondary)', fontWeight: '700' }}>Company Sergeant Majors (CSM)</div>
+                                            <h4 style={{ margin: '2px 0 0 0', fontSize: '0.9rem', fontWeight: '700' }}>Akshat Tiwari, Shreyansh Gupta</h4>
+                                        </div>
+                                    </div>
+
+                                    {/* CQMS */}
+                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
+                                        <div style={{ width: '70px', height: '85px', minWidth: '70px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <i className="fa-solid fa-user" style={{ fontSize: '1.3rem', color: 'var(--text-muted)' }}></i>
+                                            <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
+                                        </div>
+                                        <div style={{ textAlign: 'left' }}>
+                                            <div style={{ fontSize: '0.68rem', color: 'var(--secondary)', fontWeight: '700' }}>Company Quartermaster Sergeant</div>
+                                            <h4 style={{ margin: '2px 0 0 0', fontSize: '0.9rem', fontWeight: '700' }}>Ankit Singh</h4>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 4. Sergeants (Sgt) */}
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                        Sergeants (Sgt)
+                                    </h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
+                                        {[
+                                            "Shivam Pandey", "M. Vishnu", "Ritik Thakur",
+                                            "Nishant Tiwari", "Mayank Rohilla (PT)", "Pratik (Media)"
+                                        ].map((name, idx) => (
+                                            <div key={idx} className="profile-card" style={{ padding: '10px', textAlign: 'center', backgroundColor: '#fcfcfc' }}>
+                                                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Sergeant</div>
+                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.78rem', fontWeight: '700' }}>{name}</h4>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 5. Corporals (Cpl) */}
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                        Corporals (Cpl)
+                                    </h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
+                                        {[
+                                            "Adarsh", "Nikhil Kumar", "Yash Lohchab",
+                                            "Vishal Singh", "Nikhil Rai"
+                                        ].map((name, idx) => (
+                                            <div key={idx} className="profile-card" style={{ padding: '10px', textAlign: 'center', backgroundColor: '#fcfcfc' }}>
+                                                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Corporal</div>
+                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.78rem', fontWeight: '700' }}>{name}</h4>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 6. Lance Corporals (L/CPL) */}
+                                <div>
+                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                        Lance Corporals (L/CPL)
+                                    </h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
+                                        {[
+                                            "Ujjwal Jha", "Suraj Kumar", "Kartik", "Kundan Kumar",
+                                            "Ankur Debsharma", "Nikhil Kumar", "Shrish Chand", "Krishna Yadav"
+                                        ].map((name, idx) => (
+                                            <div key={idx} className="profile-card" style={{ padding: '10px', textAlign: 'center', backgroundColor: '#fcfcfc' }}>
+                                                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Lance Corporal</div>
+                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.78rem', fontWeight: '700' }}>{name}</h4>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* 7. Cadet / Admin Portal View */}
                 {currentTab === 'dashboard' && user && (
                     <div className="view-section active">
-                        {user.role === 'admin' ? (
+                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? (
                             /* Admin Management View */
                             <div className="container" style={{ paddingTop: '20px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '30px' }}>
                                     <div className="section-header" style={{ marginBottom: 0, textAlign: 'left' }}>
-                                        <h2>Admin Management Dashboard</h2>
-                                        <p>Welcome, {user.email}. Manage 1 DBN unit records, database directories, and leave permits.</p>
+                                        <h2>Command Operations Dashboard</h2>
+                                        <p>Welcome, {getRoleDisplayName(user.role)}. Manage 1 DBN unit records, notice boards, and leave permits.</p>
                                     </div>
                                     <button className="btn btn-outline" onClick={handleResetDatabase} style={{ borderColor: 'var(--danger)', color: 'var(--danger)', fontSize: '0.8rem', padding: '8px 16px' }}>
                                         <i className="fa-solid fa-triangle-exclamation"></i> Reset Database
                                     </button>
                                 </div>
 
-                                <div className="dashboard-grid">
+                                <div className="admin-dashboard-flex">
                                     {/* Sidebar Simulators */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                                    <div className="admin-consoles-section">
+                                        <h3 className="admin-consoles-title">
+                                            <i className="fa-solid fa-gears"></i> Command Operations & Simulation Consoles
+                                        </h3>
+                                        <div className="admin-consoles-grid">
                                         {/* Attendance simulator */}
                                         <div className="profile-card" style={{ textAlign: 'left', padding: '22px' }}>
                                             <h3 style={{ color: 'var(--primary)', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '5px', fontWeight: '700' }}>
@@ -1192,6 +1875,120 @@ function AppContent() {
                                                 </button>
                                             </form>
                                         </div>
+
+                                        {/* Notice Board Console */}
+                                        <div className="profile-card" style={{ textAlign: 'left', padding: '22px' }}>
+                                            <h3 style={{ color: 'var(--primary)', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '5px', fontWeight: '700' }}>
+                                                <i className="fa-solid fa-bullhorn"></i> Notice Board Console
+                                            </h3>
+                                            {noticeMsg && <div className="alert alert-success" style={{ marginBottom: '12px', fontSize: '0.75rem' }}>{noticeMsg}</div>}
+                                            <form onSubmit={handleNoticeSubmit}>
+                                                <div className="form-group" style={{ marginBottom: '10px' }}>
+                                                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Notice Title</label>
+                                                    <input 
+                                                        type="text" 
+                                                        className="form-control" 
+                                                        style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                                        placeholder="E.g., Special Parade Drill"
+                                                        value={noticeTitle}
+                                                        onChange={(e) => setNoticeTitle(e.target.value)}
+                                                        required 
+                                                    />
+                                                </div>
+                                                <div className="form-group" style={{ marginBottom: '15px' }}>
+                                                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Notice Body</label>
+                                                    <textarea 
+                                                        className="form-control" 
+                                                        style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                                        placeholder="Write notice description..."
+                                                        rows="3"
+                                                        value={noticeBody}
+                                                        onChange={(e) => setNoticeBody(e.target.value)}
+                                                        required
+                                                    ></textarea>
+                                                </div>
+                                                <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem', padding: '8px' }}>
+                                                    <i className="fa-solid fa-paper-plane"></i> Post Notice
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        {/* Camp Manager Console */}
+                                        {user.role === 'admin' && (
+                                            <div className="profile-card" style={{ textAlign: 'left', padding: '22px' }}>
+                                                <h3 style={{ color: 'var(--primary)', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '5px', fontWeight: '700' }}>
+                                                    <i className="fa-solid fa-tent"></i> Camp Manager Console
+                                                </h3>
+                                                {campMsg && <div className="alert alert-success" style={{ marginBottom: '12px', fontSize: '0.75rem' }}>{campMsg}</div>}
+                                                <form onSubmit={handleCampSubmit}>
+                                                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                                                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Camp Name</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className="form-control" 
+                                                            style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                                            placeholder="E.g., Republic Day Camp"
+                                                            value={campTitle}
+                                                            onChange={(e) => setCampTitle(e.target.value)}
+                                                            required 
+                                                        />
+                                                    </div>
+                                                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                                                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Category</label>
+                                                        <select 
+                                                            className="form-control" 
+                                                            style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                                            value={campCategory}
+                                                            onChange={(e) => setCampCategory(e.target.value)}
+                                                            required
+                                                        >
+                                                            <option value="National Level">National Level</option>
+                                                            <option value="Annual Compulsory">Annual Compulsory</option>
+                                                            <option value="Adventure">Adventure</option>
+                                                            <option value="Attachment">Attachment</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                                                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Location</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className="form-control" 
+                                                            style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                                            placeholder="E.g., Cantonment, New Delhi"
+                                                            value={campLocation}
+                                                            onChange={(e) => setCampLocation(e.target.value)}
+                                                            required 
+                                                        />
+                                                    </div>
+                                                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                                                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Duration / Dates</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className="form-control" 
+                                                            style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                                            placeholder="E.g., Jan 2027 or 10 Days"
+                                                            value={campDuration}
+                                                            onChange={(e) => setCampDuration(e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="form-group" style={{ marginBottom: '15px' }}>
+                                                        <label className="form-label" style={{ fontSize: '0.75rem' }}>Description</label>
+                                                        <textarea 
+                                                            className="form-control" 
+                                                            style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                                            placeholder="Describe camp activities..."
+                                                            rows="2"
+                                                            value={campDescription}
+                                                            onChange={(e) => setCampDescription(e.target.value)}
+                                                        ></textarea>
+                                                    </div>
+                                                    <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem', padding: '8px' }}>
+                                                        <i className="fa-solid fa-plus"></i> Publish Camp
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        )}
+                                    </div>
                                     </div>
 
                                     {/* Main Area */}
@@ -1634,7 +2431,7 @@ function AppContent() {
                                                     <div style={{ width: '130px', height: '130px', margin: '15px auto', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }}>
                                                         <i className="fa-solid fa-qrcode" style={{ fontSize: '6rem', color: '#1a202c' }}></i>
                                                     </div>
-                                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Scan using BHIM, GPAY, or Paytm to pay directly to 1 DBN NCC Subunit treasury account.</span>
+                                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Scan using BHIM, GPAY, or Paytm to pay directly to 1 DBN NCC Unit treasury account.</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1649,7 +2446,7 @@ function AppContent() {
             {/* Footer */}
             <footer className="main-footer" style={{ marginTop: 'auto', backgroundColor: '#0e1d30', color: '#8898aa', padding: '30px 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="container text-center" style={{ fontSize: '0.85rem' }}>
-                    <p>© 2026 1 DBN NCC Subunit, Delhi Technological University. All Rights Reserved.</p>
+                    <p>© 2026 1 DBN NCC Unit, Delhi Technological University. All Rights Reserved.</p>
                     <p style={{ fontSize: '0.75rem', marginTop: '5px', color: '#526071' }}>Building character, comradeship, and selfless service. Ekta aur Anushasan.</p>
                 </div>
             </footer>

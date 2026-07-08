@@ -20,10 +20,11 @@ app.use('/api/fines', require('./routes/fines'));
 app.use('/api/exemptions', require('./routes/exemptions'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/camps', require('./routes/camps'));
 
 // Basic Route
 app.get('/', (req, res) => {
-    res.json({ message: "DTU 1 DBN NCC Subunit API Active" });
+    res.json({ message: "DTU 1 DBN NCC Unit API Active" });
 });
 
 // Port configuration

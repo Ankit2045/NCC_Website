@@ -30,4 +30,17 @@ router.post('/', async (req, res) => {
     }
 });
 
+// DELETE an announcement
+router.delete('/:id', async (req, res) => {
+    try {
+        const deleted = await Announcement.findByIdAndDelete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ message: 'Notice not found.' });
+        }
+        res.json({ success: true, message: 'Notice deleted successfully!' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
