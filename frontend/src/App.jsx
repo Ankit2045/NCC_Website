@@ -1356,7 +1356,7 @@ function AppContent() {
                                         alt="DTU NCC Logo" 
                                         style={{ height: '75px', display: 'block', margin: '0 auto 15px auto', filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.15))' }} 
                                     />
-                                    <h3 className="login-title" style={{ textAlign: 'center', fontSize: '1.25rem', borderBottom: 'none', paddingBottom: '0', marginBottom: '25px' }}>
+                                    <h3 className="login-title" style={{ textAlign: 'center', fontSize: '1.25rem', borderBottom: 'none', paddingBottom: '0', marginBottom: '25px', color: 'var(--primary)', fontWeight: '700' }}>
                                         1 DBN NCC CADET LOGIN
                                     </h3>
                                     
