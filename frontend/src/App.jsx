@@ -22,6 +22,7 @@ function AppContent() {
     const [settingsCurrentPassword, setSettingsCurrentPassword] = useState('');
     const [settingsMsg, setSettingsMsg] = useState('');
     const [settingsError, setSettingsError] = useState('');
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Login Form State
     const [loginEmail, setLoginEmail] = useState('');
@@ -875,16 +876,25 @@ function AppContent() {
                 </div>
                 
                 <nav className="main-nav">
-                    <ul className="nav-links">
-                        <li><a href="#" className={`nav-link ${currentTab === 'home' ? 'active' : ''}`} onClick={() => setCurrentTab('home')}>Home</a></li>
-                        <li><a href="#" className={`nav-link ${currentTab === 'about' ? 'active' : ''}`} onClick={() => setCurrentTab('about')}>About Us</a></li>
-                        <li><a href="#" className={`nav-link ${currentTab === 'camps' ? 'active' : ''}`} onClick={() => setCurrentTab('camps')}>Camps</a></li>
-                        <li><a href="#" className={`nav-link ${currentTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setCurrentTab('leaderboard')}>Leaderboard</a></li>
-                        <li><a href="#" className={`nav-link ${currentTab === 'rankpanel' ? 'active' : ''}`} onClick={() => setCurrentTab('rankpanel')}>Rank Panel</a></li>
-                        <li><a href="#" className={`nav-link ${currentTab === 'contact' ? 'active' : ''}`} onClick={() => setCurrentTab('contact')}>Notices & Help</a></li>
+                    <button 
+                        className="menu-toggle" 
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+                        aria-label="Toggle menu" 
+                        style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--navy-blue)', padding: '5px', display: 'none' }}
+                    >
+                        <i className={mobileMenuOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars"}></i>
+                    </button>
+                    
+                    <ul className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>
+                        <li><a href="#" className={`nav-link ${currentTab === 'home' ? 'active' : ''}`} onClick={() => { setCurrentTab('home'); setMobileMenuOpen(false); }}>Home</a></li>
+                        <li><a href="#" className={`nav-link ${currentTab === 'about' ? 'active' : ''}`} onClick={() => { setCurrentTab('about'); setMobileMenuOpen(false); }}>About Us</a></li>
+                        <li><a href="#" className={`nav-link ${currentTab === 'camps' ? 'active' : ''}`} onClick={() => { setCurrentTab('camps'); setMobileMenuOpen(false); }}>Camps</a></li>
+                        <li><a href="#" className={`nav-link ${currentTab === 'leaderboard' ? 'active' : ''}`} onClick={() => { setCurrentTab('leaderboard'); setMobileMenuOpen(false); }}>Leaderboard</a></li>
+                        <li><a href="#" className={`nav-link ${currentTab === 'rankpanel' ? 'active' : ''}`} onClick={() => { setCurrentTab('rankpanel'); setMobileMenuOpen(false); }}>Rank Panel</a></li>
+                        <li><a href="#" className={`nav-link ${currentTab === 'contact' ? 'active' : ''}`} onClick={() => { setCurrentTab('contact'); setMobileMenuOpen(false); }}>Notices & Help</a></li>
                         
                         {!user && (
-                            <li><a href="#" className={`nav-link ${currentTab === 'register' ? 'active' : ''}`} onClick={() => setCurrentTab('register')}>Cadet Registration</a></li>
+                            <li><a href="#" className={`nav-link ${currentTab === 'register' ? 'active' : ''}`} onClick={() => { setCurrentTab('register'); setMobileMenuOpen(false); }}>Cadet Registration</a></li>
                         )}
                         
                         {user && (
@@ -892,7 +902,7 @@ function AppContent() {
                                 <a 
                                     href="#" 
                                     className={`nav-link ${currentTab === 'dashboard' ? 'active' : ''}`} 
-                                    onClick={() => setCurrentTab('dashboard')}
+                                    onClick={() => { setCurrentTab('dashboard'); setMobileMenuOpen(false); }}
                                 >
                                     {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
                                 </a>
@@ -907,6 +917,7 @@ function AppContent() {
                                         setSettingsMsg('');
                                         setSettingsError('');
                                         setCurrentTab('settings');
+                                        setMobileMenuOpen(false);
                                     }}
                                 >
                                     <i className="fa-solid fa-user-gear"></i> Settings
@@ -916,11 +927,11 @@ function AppContent() {
                         
                         <li>
                             {user ? (
-                                <button className="btn btn-outline" onClick={() => { logout(); setCurrentTab('home'); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                                <button className="btn btn-outline" onClick={() => { logout(); setCurrentTab('home'); setMobileMenuOpen(false); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                                     <i className="fa-solid fa-right-from-bracket"></i> Logout ({user.role === 'admin' ? 'Admin' : user.role === 'ano' ? 'ANO' : user.role === 'suo' ? 'SUO' : user.role === 'csm' ? 'CSM' : user.role === 'cqms' ? 'CQMS' : user.role === 'juo' ? 'JUO' : (cadet?.name || 'Cadet')})
                                 </button>
                             ) : (
-                                <button className="btn btn-primary" onClick={() => { setLoginError(''); setCurrentTab('login'); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                                <button className="btn btn-primary" onClick={() => { setLoginError(''); setCurrentTab('login'); setMobileMenuOpen(false); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                                     <i className="fa-solid fa-right-to-bracket"></i> Cadet Login
                                 </button>
                             )}
