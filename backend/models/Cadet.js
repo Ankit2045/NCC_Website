@@ -26,7 +26,7 @@ const CadetSchema = new mongoose.Schema({
     },
     rank: {
         type: String,
-        enum: ['Cadet', 'L/CPL', 'CPL', 'SGT', 'CQMS', 'CSM', 'JUO', 'SUO'],
+        enum: ['Cadet', 'L/CPL', 'CPL', 'SGT', 'CQMS', 'CSM', 'JUO', 'SUO', 'L/Cpl', 'Cpl', 'Sgt'],
         default: 'Cadet'
     },
     wing: {
