@@ -104,6 +104,9 @@ function AppContent() {
     const [noticeTitle, setNoticeTitle] = useState('');
     const [noticeBody, setNoticeBody] = useState('');
     const [noticeMsg, setNoticeMsg] = useState('');
+    const [editingNotice, setEditingNotice] = useState(null);
+    const [editNoticeTitle, setEditNoticeTitle] = useState('');
+    const [editNoticeBody, setEditNoticeBody] = useState('');
 
     const [campTitle, setCampTitle] = useState('');
     const [campCategory, setCampCategory] = useState('National Level');
@@ -613,6 +616,32 @@ function AppContent() {
             }
         } catch (err) {
             console.error('Error deleting notice:', err);
+        }
+    };
+
+    const handleEditNoticeSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`/api/announcements/${editingNotice._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: editNoticeTitle,
+                    body: editNoticeBody
+                })
+            });
+            if (res.ok) {
+                alert('Notice updated successfully!');
+                setEditingNotice(null);
+                // reload notices
+                const annRes = await fetch('/api/announcements');
+                if (annRes.ok) setAnnouncements(await annRes.json());
+            } else {
+                alert('Failed to update notice.');
+            }
+        } catch (err) {
+            console.error('Error updating notice:', err);
+            alert('Server error updating notice.');
         }
     };
 
@@ -1995,13 +2024,26 @@ function AppContent() {
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
                                                         <div className="announcement-title">{n.title}</div>
                                                         {user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
-                                                            <button 
-                                                                className="btn btn-outline" 
-                                                                style={{ padding: '4px 8px', fontSize: '0.7rem', borderColor: 'var(--danger)', color: 'var(--danger)', display: 'inline-flex', alignItems: 'center', gap: '3px', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
-                                                                onClick={() => handleDeleteNotice(n._id)}
-                                                            >
-                                                                <i className="fa-solid fa-trash-can"></i> Delete
-                                                            </button>
+                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                <button 
+                                                                    className="btn btn-outline" 
+                                                                    style={{ padding: '4px 8px', fontSize: '0.7rem', borderColor: 'var(--primary)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '3px', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
+                                                                    onClick={() => {
+                                                                        setEditingNotice(n);
+                                                                        setEditNoticeTitle(n.title);
+                                                                        setEditNoticeBody(n.body);
+                                                                    }}
+                                                                >
+                                                                    <i className="fa-solid fa-pen-to-square"></i> Edit
+                                                                </button>
+                                                                <button 
+                                                                    className="btn btn-outline" 
+                                                                    style={{ padding: '4px 8px', fontSize: '0.7rem', borderColor: 'var(--danger)', color: 'var(--danger)', display: 'inline-flex', alignItems: 'center', gap: '3px', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
+                                                                    onClick={() => handleDeleteNotice(n._id)}
+                                                                >
+                                                                    <i className="fa-solid fa-trash-can"></i> Delete
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                     <div className="announcement-body" style={{ marginTop: '5px' }}>{n.body}</div>
@@ -2725,56 +2767,7 @@ function AppContent() {
                                             <i className="fa-solid fa-gears"></i> Command Operations & Simulation Consoles
                                         </h3>
                                         <div className="admin-consoles-grid">
-                                        {/* Attendance simulator */}
-                                        <div className="profile-card" style={{ textAlign: 'left', padding: '22px' }}>
-                                            <h3 style={{ color: 'var(--primary)', fontSize: '1rem', textTransform: 'uppercase', marginBottom: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '5px', fontWeight: '700' }}>
-                                                <i className="fa-solid fa-gamepad"></i> Attendance Simulator
-                                            </h3>
-                                            {simMsg && <div className="alert alert-success" style={{ marginBottom: '12px', fontSize: '0.75rem' }}>{simMsg}</div>}
-                                            <form onSubmit={handleAttendanceSim}>
-                                                <div className="form-group" style={{ marginBottom: '10px' }}>
-                                                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Select Cadet</label>
-                                                    <select 
-                                                        className="form-control" 
-                                                        style={{ fontSize: '0.8rem', padding: '6px 10px' }}
-                                                        value={simCadetId}
-                                                        onChange={(e) => setSimCadetId(e.target.value)}
-                                                        required
-                                                    >
-                                                        {cadets.map(c => <option key={c.cadetId} value={c.cadetId}>{c.name} ({c.cadetId})</option>)}
-                                                        {cadets.length === 0 && <option value="">No cadets enrolled</option>}
-                                                    </select>
-                                                </div>
-                                                <div className="form-group" style={{ marginBottom: '10px' }}>
-                                                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Parade Date</label>
-                                                    <input 
-                                                        type="date" 
-                                                        className="form-control" 
-                                                        style={{ fontSize: '0.8rem', padding: '6px 10px' }}
-                                                        value={simDate}
-                                                        onChange={(e) => setSimDate(e.target.value)}
-                                                        required 
-                                                    />
-                                                </div>
-                                                <div className="form-group" style={{ marginBottom: '15px' }}>
-                                                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Status</label>
-                                                    <select 
-                                                        className="form-control" 
-                                                        style={{ fontSize: '0.8rem', padding: '6px 10px' }}
-                                                        value={simStatus}
-                                                        onChange={(e) => setSimStatus(e.target.value)}
-                                                        required
-                                                    >
-                                                        <option value="Present">Present</option>
-                                                        <option value="Absent">Absent (Triggers ₹50 Fine)</option>
-                                                        <option value="Excused">Excused (No Fine)</option>
-                                                    </select>
-                                                </div>
-                                                <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem', padding: '8px' }}>
-                                                    <i className="fa-solid fa-arrows-rotate"></i> Sync Attendance
-                                                </button>
-                                            </form>
-                                        </div>
+
 
                                         {/* CSM Turnout Penalty */}
                                         <div className="profile-card" style={{ textAlign: 'left', padding: '22px' }}>
@@ -4404,6 +4397,74 @@ function AppContent() {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+                {editingNotice && (
+                    <div className="modal-backdrop" style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1050
+                    }}>
+                        <div className="profile-card" style={{
+                            width: '90%',
+                            maxWidth: '500px',
+                            backgroundColor: '#fff',
+                            padding: '25px',
+                            borderRadius: 'var(--radius-lg)',
+                            boxShadow: 'var(--shadow-lg)'
+                        }}>
+                            <h3 style={{ color: 'var(--primary)', marginBottom: '15px', fontWeight: '700', fontSize: '1.1rem' }}>
+                                <i className="fa-solid fa-pen-to-square"></i> Edit Notice Board Message
+                            </h3>
+                            <form onSubmit={handleEditNoticeSubmit}>
+                                <div className="form-group" style={{ marginBottom: '12px', textAlign: 'left' }}>
+                                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Notice Title</label>
+                                    <input 
+                                        type="text" 
+                                        className="form-control" 
+                                        style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                        value={editNoticeTitle}
+                                        onChange={(e) => setEditNoticeTitle(e.target.value)}
+                                        required 
+                                    />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: '20px', textAlign: 'left' }}>
+                                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Notice Description</label>
+                                    <textarea 
+                                        className="form-control" 
+                                        style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                                        value={editNoticeBody}
+                                        onChange={(e) => setEditNoticeBody(e.target.value)}
+                                        rows="4"
+                                        required
+                                    ></textarea>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-outline" 
+                                        style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                                        onClick={() => setEditingNotice(null)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="btn btn-primary"
+                                        style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}

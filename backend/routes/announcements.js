@@ -43,4 +43,21 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// PUT update an announcement
+router.put('/:id', async (req, res) => {
+    const { title, body } = req.body;
+    try {
+        const announcement = await Announcement.findById(req.params.id);
+        if (!announcement) {
+            return res.status(404).json({ message: 'Notice not found.' });
+        }
+        if (title) announcement.title = title;
+        if (body) announcement.body = body;
+        await announcement.save();
+        res.json(announcement);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
 module.exports = router;
