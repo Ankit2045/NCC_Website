@@ -1195,7 +1195,7 @@ function AppContent() {
                                 </div>
 
                                 <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
-                                    <img src="gallery/co_avatar.jpg" alt="Col Gurpreet Singh" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
+                                    <img src="gallery/co_gurpreet.png" alt="Col Gurpreet Singh" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
                                     <span className="badge" style={{ backgroundColor: 'var(--navy-blue)', color: '#fff', fontSize: '0.72rem', padding: '4px 8px' }}>Commanding Officer (CO)</span>
                                     <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Col Gurpreet Singh</h4>
                                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>CO 1 Delhi Battalion NCC</p>
@@ -2045,7 +2045,6 @@ function AppContent() {
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
                                             {renderProfileCard("Prof. Prateek Sharma", "Colonel Commandant", "var(--primary)", "var(--primary)", "gallery/vc_prateek.png")}
-                                            {renderProfileCard("Col. Gurpreet Singh", "Commanding Officer (CO)", "var(--primary)", "var(--primary)", "gallery/co_gurpreet.png")}
                                             {renderProfileCard("Lt. Dr. Raghveder Gautam", "Associate NCC Officer", "var(--saffron)", "var(--saffron)", "gallery/ano_raghvender.jpg")}
                                         </div>
                                     </div>
