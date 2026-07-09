@@ -2788,7 +2788,7 @@ function AppContent() {
                                                                     <td><span className="badge badge-success">Approved</span></td>
                                                                     <td>
                                                                         <div style={{ display: 'flex', gap: '5px' }}>
-                                                                            <button className="btn btn-outline" onClick={() => handleEditClick(c)} style={{ padding: '4px 8px', fontSize: '0.75rem' }}><i className="fa-solid fa-pen"></i></button>
+                                                                            <button className="btn btn-outline" onClick={() => setSelectedViewCadet({ ...c })} style={{ padding: '4px 8px', fontSize: '0.75rem' }}><i className="fa-solid fa-pen"></i></button>
                                                                             <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}><i className="fa-solid fa-trash"></i></button>
                                                                         </div>
                                                                     </td>
@@ -2803,107 +2803,7 @@ function AppContent() {
                                                 </table>
                                             </div>
 
-                                            {/* Cadet CRUD form (Only shown when editing) */}
-                                            {editingCadetId && (
-                                                <div id="cadet-form-section" style={{ marginTop: '30px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
-                                                    <h4 style={{ color: 'var(--primary)', fontSize: '0.95rem', textTransform: 'uppercase', marginBottom: '15px', fontWeight: '700' }}>
-                                                        <i className="fa-solid fa-user-pen"></i> Update Cadet Record
-                                                    </h4>
-                                                    {adminCadetMsg && <div className="alert alert-success" style={{ marginBottom: '15px', fontSize: '0.85rem' }}>{adminCadetMsg}</div>}
-                                                    <form onSubmit={handleCadetSubmit}>
-                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Cadet ID *</label>
-                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetIdVal} onChange={(e) => setCadetIdVal(e.target.value)} required />
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
-                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetName} onChange={(e) => setCadetName(e.target.value)} required />
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Date of Birth *</label>
-                                                                <input type="date" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetDob} onChange={(e) => setCadetDob(e.target.value)} required />
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Regimental No *</label>
-                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetEnrollment} onChange={(e) => setCadetEnrollment(e.target.value)} required />
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Squadron *</label>
-                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetSquadron} onChange={(e) => setCadetSquadron(e.target.value)} required>
-                                                                    <option value="hq">Headquarters (HQ)</option>
-                                                                    <option value="alpha">Alpha</option>
-                                                                    <option value="bravo">Bravo</option>
-                                                                    <option value="charlie">Charlie</option>
-                                                                    <option value="delta">Delta</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Rank *</label>
-                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetRank} onChange={(e) => setCadetRank(e.target.value)} required>
-                                                                    <option value="Cadet">Cadet (Cdt)</option>
-                                                                    <option value="L/Cpl">Lance Corporal (L/Cpl)</option>
-                                                                    <option value="Cpl">Corporal (Cpl)</option>
-                                                                    <option value="Sgt">Sergeant (Sgt)</option>
-                                                                    <option value="CSM">Company Sergeant Major (CSM)</option>
-                                                                    <option value="CQMS">Company Quartermaster Sergeant (CQMS)</option>
-                                                                    <option value="JUO">Junior Under Officer (JUO)</option>
-                                                                    <option value="SUO">Senior Under Officer (SUO)</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Wing *</label>
-                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetWing} onChange={(e) => setCadetWing(e.target.value)} required>
-                                                                    <option value="Army">Army</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Cadet Year *</label>
-                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetYear} onChange={(e) => setCadetYear(e.target.value)} required>
-                                                                    <option value="2">2nd Year</option>
-                                                                    <option value="3">3rd Year</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Contact Number *</label>
-                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetContact} onChange={(e) => setCadetContact(e.target.value)} required />
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Email Address (@dtuncc.in) *</label>
-                                                                <input type="email" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetEmail} onChange={(e) => setCadetEmail(e.target.value)} required />
-                                                            </div>
-                                                            <div className="form-group">
-                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel / Day Scholar / PG *</label>
-                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetResidenceType} onChange={(e) => setCadetResidenceType(e.target.value)} required>
-                                                                    <option value="Hostel">Hostel Resident</option>
-                                                                    <option value="Day Scholar">Day Scholar</option>
-                                                                    <option value="PG/Flat">PG/Flat</option>
-                                                                </select>
-                                                            </div>
-                                                            {cadetResidenceType === 'Hostel' && (
-                                                                <div className="form-group">
-                                                                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel Number *</label>
-                                                                    <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} placeholder="E.g., Hostel 3" value={cadetHostelNo} onChange={(e) => setCadetHostelNo(e.target.value)} required />
-                                                                </div>
-                                                            )}
-                                                            {cadetResidenceType === 'PG/Flat' && (
-                                                                <div className="form-group">
-                                                                    <label className="form-label" style={{ fontSize: '0.78rem' }}>PG/Flat Location *</label>
-                                                                    <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} placeholder="E.g., Sector 15" value={cadetPgLocation} onChange={(e) => setCadetPgLocation(e.target.value)} required />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                                                            <button type="submit" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
-                                                                <i className="fa-solid fa-floppy-disk"></i> Save Updates
-                                                            </button>
-                                                            <button type="button" className="btn btn-outline" onClick={() => { setEditingCadetId(null); setCadetIdVal(''); setCadetName(''); setCadetEnrollment(''); setCadetContact(''); setCadetEmail(''); setCadetDob(''); setCadetResidenceType('Hostel'); setCadetHostelNo(''); setCadetPgLocation(''); }} style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
-                                                                Cancel
-                                                            </button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            )}
+
                                         </div>
 
                                         {/* Fines and logs summary side-by-side */}
