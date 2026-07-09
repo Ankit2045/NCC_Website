@@ -150,4 +150,25 @@ router.post('/contribution', async (req, res) => {
     }
 });
 
+// GET all recorded competition placements
+router.get('/competition', async (req, res) => {
+    try {
+        const results = await CompetitionResult.find({}).sort({ dateRecorded: -1 });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// DELETE remove recorded competition placement
+router.delete('/competition/:id', async (req, res) => {
+    try {
+        const result = await CompetitionResult.findByIdAndDelete(req.params.id);
+        if (!result) return res.status(404).json({ message: 'Competition result not found' });
+        res.json({ message: 'Competition result removed successfully!' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

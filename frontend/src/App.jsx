@@ -12,6 +12,7 @@ function AppContent() {
     const [exemptions, setExemptions] = useState([]);
     const [attendance, setAttendance] = useState([]);
     const [fines, setFines] = useState([]);
+    const [competitionPlacements, setCompetitionPlacements] = useState([]);
     const [selectedViewCadet, setSelectedViewCadet] = useState(null);
     const [squadronFilter, setSquadronFilter] = useState('all');
     const [showSquadronGroupTables, setShowSquadronGroupTables] = useState(false);
@@ -189,7 +190,7 @@ function AppContent() {
 
     // Fetch Admin Data
     const fetchAdminData = async () => {
-        if (!user || user.role !== 'admin') return;
+        if (!user || user.role === 'cadet') return;
         try {
             const cadRes = await fetch('/api/cadets');
             if (cadRes.ok) {
@@ -206,6 +207,9 @@ function AppContent() {
 
             const fineRes = await fetch('/api/fines');
             if (fineRes.ok) setFines(await fineRes.json());
+
+            const compPlacementsRes = await fetch('/api/leaderboard/competition');
+            if (compPlacementsRes.ok) setCompetitionPlacements(await compPlacementsRes.json());
         } catch (err) {
             console.error('Error fetching admin data:', err);
         }
@@ -258,7 +262,12 @@ function AppContent() {
         if (res.success) {
             setLoginEmail('');
             setLoginPassword('');
-            setCurrentTab('dashboard');
+            const savedUser = JSON.parse(localStorage.getItem('dtu_ncc_prod_user'));
+            if (savedUser && ['csm', 'juo', 'sgt'].includes(savedUser.role)) {
+                setCurrentTab('squadrons');
+            } else {
+                setCurrentTab('dashboard');
+            }
         } else {
             setLoginError(res.message);
         }
@@ -755,6 +764,29 @@ function AppContent() {
         document.getElementById('cadet-form-section')?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    const getCadetName = (cadetId) => {
+        const found = cadets.find(c => c.cadetId === cadetId);
+        return found ? found.name : 'Unknown';
+    };
+
+    const handleDeleteCompetition = async (id) => {
+        if (!window.confirm('Are you sure you want to remove this competition position?')) return;
+        try {
+            const res = await fetch(`/api/leaderboard/competition/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                alert('Competition position removed successfully!');
+                fetchPublicData();
+                fetchAdminData();
+            } else {
+                alert('Failed to remove competition position');
+            }
+        } catch (err) {
+            console.error('Error deleting competition position:', err);
+        }
+    };
+
     const handleDeleteClick = async (id) => {
         if (!confirm('Are you sure you want to delete this cadet?')) return;
         try {
@@ -868,6 +900,7 @@ function AppContent() {
             if (res.ok) {
                 setSimCompMsg(`Recorded position #${simCompPosition} for ${simCompSquadron.toUpperCase()}`);
                 fetchPublicData();
+                fetchAdminData();
             }
         } catch (err) {
             console.error(err);
@@ -1075,23 +1108,43 @@ function AppContent() {
                                         listStyle: 'none',
                                         textAlign: 'left'
                                     }}>
-                                        <li>
-                                            <a 
-                                                href="#" 
-                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
-                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setCurrentTab('dashboard');
-                                                    setAccountDropdownOpen(false);
-                                                    setMobileMenuOpen(false);
-                                                }}
-                                            >
-                                                <i className="fa-solid fa-gauge" style={{ width: '20px', color: 'var(--primary)' }}></i> {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
-                                            </a>
-                                        </li>
-                                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                                        {['admin', 'ano', 'suo', 'cqms'].includes(user.role) && (
+                                            <li>
+                                                <a 
+                                                    href="#" 
+                                                    style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setCurrentTab('dashboard');
+                                                        setAccountDropdownOpen(false);
+                                                        setMobileMenuOpen(false);
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-gauge" style={{ width: '20px', color: 'var(--primary)' }}></i> Admin Portal
+                                                </a>
+                                            </li>
+                                        )}
+                                        {user.role === 'cadet' && (
+                                            <li>
+                                                <a 
+                                                    href="#" 
+                                                    style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setCurrentTab('dashboard');
+                                                        setAccountDropdownOpen(false);
+                                                        setMobileMenuOpen(false);
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-gauge" style={{ width: '20px', color: 'var(--primary)' }}></i> My Dashboard
+                                                </a>
+                                            </li>
+                                        )}
+                                        {['admin', 'ano', 'suo', 'cqms'].includes(user.role) && (
                                             <>
                                                 <li>
                                                     <a 
@@ -1125,23 +1178,25 @@ function AppContent() {
                                                         <i className="fa-solid fa-address-book" style={{ width: '20px', color: 'var(--primary)' }}></i> Cadet Directory
                                                     </a>
                                                 </li>
-                                                <li>
-                                                    <a 
-                                                        href="#" 
-                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
-                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setCurrentTab('squadrons');
-                                                            setAccountDropdownOpen(false);
-                                                            setMobileMenuOpen(false);
-                                                        }}
-                                                    >
-                                                        <i className="fa-solid fa-users" style={{ width: '20px', color: 'var(--primary)' }}></i> Sqn List
-                                                    </a>
-                                                </li>
                                             </>
+                                        )}
+                                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo', 'sgt'].includes(user.role) && (
+                                            <li>
+                                                <a 
+                                                    href="#" 
+                                                    style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setCurrentTab('squadrons');
+                                                        setAccountDropdownOpen(false);
+                                                        setMobileMenuOpen(false);
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-users" style={{ width: '20px', color: 'var(--primary)' }}></i> Sqn List
+                                                </a>
+                                            </li>
                                         )}
                                         <li>
                                             <a 
@@ -2265,7 +2320,7 @@ function AppContent() {
                 })()}                {/* 7. Cadet / Admin Portal View */}
                 {currentTab === 'dashboard' && user && (
                     <div className="view-section active">
-                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? (
+                        {['admin', 'ano', 'suo', 'cqms'].includes(user.role) ? (
                             /* Admin Management View */
                             <div className="container" style={{ paddingTop: '20px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '30px' }}>
@@ -2566,6 +2621,7 @@ function AppContent() {
                                                         <tr>
                                                             <th>Submitted</th>
                                                             <th>Cadet ID</th>
+                                                            <th>Name</th>
                                                             <th>Parade Date</th>
                                                             <th>Reason Description</th>
                                                             <th>Status</th>
@@ -2577,6 +2633,7 @@ function AppContent() {
                                                             <tr key={e._id}>
                                                                 <td>{e.dateSubmitted}</td>
                                                                 <td><strong>{e.cadetId}</strong></td>
+                                                                <td>{getCadetName(e.cadetId)}</td>
                                                                 <td>{e.date}</td>
                                                                 <td>{e.reason}</td>
                                                                 <td>
@@ -2672,6 +2729,47 @@ function AppContent() {
                                                     <i className="fa-solid fa-plus"></i> Record Result
                                                 </button>
                                             </form>
+
+                                            {/* List of recorded placements to view and delete */}
+                                            {competitionPlacements.length > 0 && (
+                                                <div style={{ marginTop: '20px', borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
+                                                    <h4 style={{ fontSize: '0.9rem', marginBottom: '12px', color: 'var(--navy-blue)', fontWeight: '700' }}>Recorded Placements (Click trash to remove):</h4>
+                                                    <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                                                        <table className="leaderboard-table" style={{ width: '100%', fontSize: '0.8rem' }}>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Competition</th>
+                                                                    <th>Squadron</th>
+                                                                    <th>Placement</th>
+                                                                    <th>Points Awarded</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {competitionPlacements.map(p => (
+                                                                    <tr key={p._id}>
+                                                                        <td>{p.compName}</td>
+                                                                        <td style={{ textTransform: 'uppercase' }}>{p.squadronId}</td>
+                                                                        <td>Place #{p.position}</td>
+                                                                        <td><strong style={{ color: 'var(--success)' }}>+{p.pointsAwarded} pts</strong></td>
+                                                                        <td>
+                                                                            <button 
+                                                                                type="button" 
+                                                                                className="btn btn-outline" 
+                                                                                onClick={() => handleDeleteCompetition(p._id)} 
+                                                                                style={{ padding: '3px 6px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                                                                                title="Remove this competition placement"
+                                                                            >
+                                                                                <i className="fa-solid fa-trash"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Fines and logs summary side-by-side */}
@@ -2733,6 +2831,16 @@ function AppContent() {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        ) : ['csm', 'juo', 'sgt'].includes(user.role) ? (
+                            /* CSM/JUO/SGT view-only landing page notices */
+                            <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px', textAlign: 'center' }}>
+                                <div style={{ maxWidth: '600px', margin: '0 auto', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', padding: '40px', boxShadow: 'var(--shadow-md)', borderTop: '5px solid var(--primary)' }}>
+                                    <i className="fa-solid fa-shield-halved" style={{ fontSize: '3rem', color: 'var(--primary)', marginBottom: '20px' }}></i>
+                                    <h2 style={{ fontSize: '1.5rem', color: 'var(--navy-blue)', marginBottom: '15px', fontWeight: '700' }}>Access Restricted</h2>
+                                    <p style={{ color: 'var(--text-muted)', marginBottom: '25px', fontSize: '0.9rem' }}>As a {getRoleDisplayName(user.role)}, your access is restricted to viewing the Squadron List only.</p>
+                                    <button className="btn btn-primary" onClick={() => setCurrentTab('squadrons')}>View Squadron List</button>
                                 </div>
                             </div>
                         ) : (
@@ -2892,7 +3000,7 @@ function AppContent() {
                     </div>
                 )}
 
-                {currentTab === 'requests' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                {currentTab === 'requests' && user && ['admin', 'ano', 'suo', 'cqms'].includes(user.role) && (
                     <div className="view-section active">
                         <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
                             <div className="section-header">
@@ -2956,7 +3064,7 @@ function AppContent() {
                     </div>
                 )}
 
-                {currentTab === 'directory' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                {currentTab === 'directory' && user && ['admin', 'ano', 'suo', 'cqms'].includes(user.role) && (
                     <div className="view-section active">
                         <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
                             <div className="section-header">
@@ -3039,7 +3147,7 @@ function AppContent() {
                     </div>
                 )}
 
-                {currentTab === 'squadrons' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                {currentTab === 'squadrons' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo', 'sgt'].includes(user.role) && (
                     <div className="view-section active">
                         <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
                             <div className="section-header">
@@ -3175,9 +3283,10 @@ function AppContent() {
                             </button>
                             
                             <h2 style={{ margin: '0 0 20px 0', fontSize: '1.4rem', color: 'var(--navy-blue)', fontWeight: '700', borderBottom: '1px solid var(--border)', paddingBottom: '15px' }}>
-                                Edit Cadet Record: {selectedViewCadet.name} (ID: {selectedViewCadet.cadetId})
+                                {['admin', 'ano', 'suo', 'cqms'].includes(user.role) ? 'Edit Cadet Record' : 'Cadet Details'}: {selectedViewCadet.name} (ID: {selectedViewCadet.cadetId})
                             </h2>
 
+                            {['admin', 'ano', 'suo', 'cqms'].includes(user.role) ? (
                             <form onSubmit={async (e) => {
                                 e.preventDefault();
                                 try {
@@ -3409,6 +3518,29 @@ function AppContent() {
                                     <button type="button" className="btn btn-outline" onClick={() => setSelectedViewCadet(null)}>Cancel</button>
                                 </div>
                             </form>
+                            ) : (
+                                <div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '25px', textAlign: 'left' }}>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Cadet ID:</strong> {selectedViewCadet.cadetId}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Name:</strong> {selectedViewCadet.name}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Rank:</strong> {selectedViewCadet.rank}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Squadron:</strong> <span style={{ textTransform: 'uppercase' }}>{selectedViewCadet.squadron}</span></div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>DLI / Regt No:</strong> {selectedViewCadet.enrollmentNo || selectedViewCadet.dliNo}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Contact:</strong> {selectedViewCadet.contact}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Email:</strong> {selectedViewCadet.email}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>DOB:</strong> {selectedViewCadet.dob ? selectedViewCadet.dob.split('T')[0] : 'N/A'}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Blood Group:</strong> {selectedViewCadet.bloodGroup || 'N/A'}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Residence:</strong> {selectedViewCadet.residenceType || 'N/A'} {selectedViewCadet.hostelNo ? `(Hostel ${selectedViewCadet.hostelNo})` : selectedViewCadet.pgLocation ? `(PG: ${selectedViewCadet.pgLocation})` : ''}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Course & Branch:</strong> {selectedViewCadet.course || 'N/A'} {selectedViewCadet.branch || ''}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>College Roll No:</strong> {selectedViewCadet.collegeRollNo || 'N/A'}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Camps Attended:</strong> {selectedViewCadet.campsAttended || 'None'}</div>
+                                        <div style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}><strong>Other Details:</strong> {selectedViewCadet.otherDetails || 'None'}</div>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px', borderTop: '1px solid var(--border)', paddingTop: '15px' }}>
+                                        <button type="button" className="btn btn-outline" onClick={() => setSelectedViewCadet(null)}>Close</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
