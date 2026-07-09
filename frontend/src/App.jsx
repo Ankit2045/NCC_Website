@@ -1024,7 +1024,7 @@ function AppContent() {
                         className="menu-toggle" 
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
                         aria-label="Toggle menu" 
-                        style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--navy-blue)', padding: '5px', display: 'none' }}
+                        style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--navy-blue)', padding: '5px' }}
                     >
                         <i className={mobileMenuOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars"}></i>
                     </button>
