@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Cadet = require('../models/Cadet');
+const sendEmail = require('../utils/sendEmail');
 
 // In-memory store for mock OTPs
 const otpStore = new Map();
 
 // @route   POST /api/auth/send-otp
-// @desc    Simulate sending an OTP to email or phone
-router.post('/send-otp', (req, res) => {
+// @desc    Send an OTP to email or phone (via SMTP for email, mock for phone)
+router.post('/send-otp', async (req, res) => {
     const { target } = req.body;
     if (!target) {
         return res.status(400).json({ message: 'Target email/phone is required.' });
@@ -17,8 +18,40 @@ router.post('/send-otp', (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore.set(target, otp);
     
-    // For demonstration, return the OTP back in the API response so the UI can prompt the user
-    res.json({ message: `Mock OTP sent to ${target}`, otp });
+    // Check if target is an email address
+    if (target.includes('@')) {
+        try {
+            const emailResult = await sendEmail({
+                to: target,
+                subject: '1 DBN NCC Unit - Verification OTP',
+                text: `Hello, your 1 DBN NCC Cadet Portal verification OTP is: ${otp}. This code is valid for 15 minutes.`,
+                html: `<div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #FF9933; text-align: center;">1 DBN NCC Cadet Subunit</h2>
+                    <hr/>
+                    <p>Hello,</p>
+                    <p>Your verification OTP code for the Cadet Portal is:</p>
+                    <div style="font-size: 24px; font-weight: bold; letter-spacing: 2px; text-align: center; margin: 20px 0; padding: 10px; background-color: #f7f7f7; border: 1px dashed #128807; color: #128807;">
+                        ${otp}
+                    </div>
+                    <p>This code is valid for 15 minutes. Please do not share this OTP with anyone.</p>
+                    <br/>
+                    <p>Best Regards,<br/><strong>1 DBN NCC Unit Admin</strong></p>
+                </div>`
+            });
+
+            if (emailResult.mock) {
+                return res.json({ message: `Mock OTP sent to ${target} (check server console)`, otp });
+            }
+
+            return res.json({ message: `OTP sent successfully to ${target}` });
+        } catch (error) {
+            console.error('Error in send-otp route:', error);
+            return res.status(500).json({ message: 'Failed to send OTP email. Please try again later.' });
+        }
+    } else {
+        // For phone target, keep simulated OTP
+        res.json({ message: `Mock OTP sent to ${target}`, otp });
+    }
 });
 
 // @route   POST /api/auth/verify-otp
@@ -108,6 +141,7 @@ router.post('/reset', async (req, res) => {
             college: "DTU",
             dliNo: "DL2024HQ001",
             bloodGroup: "O+",
+            dob: "2004-01-01",
             approved: true
         });
         await suoCadet.save();
@@ -125,6 +159,7 @@ router.post('/reset', async (req, res) => {
             college: "DTU",
             dliNo: "DL2024HQ002",
             bloodGroup: "A+",
+            dob: "2004-02-02",
             approved: true
         });
         await csmCadet.save();
@@ -142,6 +177,7 @@ router.post('/reset', async (req, res) => {
             college: "DTU",
             dliNo: "DL2024HQ003",
             bloodGroup: "B+",
+            dob: "2004-03-03",
             approved: true
         });
         await cqmsCadet.save();
@@ -159,6 +195,7 @@ router.post('/reset', async (req, res) => {
             college: "DTU",
             dliNo: "DL2024AL004",
             bloodGroup: "AB+",
+            dob: "2004-04-04",
             approved: true
         });
         await juoCadet.save();
@@ -176,6 +213,7 @@ router.post('/reset', async (req, res) => {
             college: "DTU",
             dliNo: "DL2024AL005",
             bloodGroup: "O-",
+            dob: "2005-05-05",
             approved: true
         });
         await cadetCadet.save();
@@ -283,11 +321,20 @@ router.post('/reset', async (req, res) => {
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
     const {
-        name, enrollmentNo, squadron, rank, wing, year, contact, email, password,
+        name, enrollmentNo, squadron, rank, wing, year, contact, email, password, dob,
         college, dliNo, bloodGroup, course, branch, collegeRollNo, academicYear,
         altContact, address, residenceType, city, pincode, fatherName, motherName,
         guardianName, allergies, medicalConditions, medications, campsAttended, otherDetails
     } = req.body;
+
+    const phoneRegex = /^\d{10}$/;
+    if (!contact || !phoneRegex.test(contact)) {
+        return res.status(400).json({ message: 'A valid 10-digit mobile number is required.' });
+    }
+
+    if (!dob) {
+        return res.status(400).json({ message: 'Date of Birth is required.' });
+    }
 
     if (!dliNo || (!dliNo.startsWith('DL2024') && !dliNo.startsWith('DL2025'))) {
         return res.status(400).json({ message: 'DLI number must begin with either DL2024 or DL2025.' });
@@ -310,6 +357,7 @@ router.post('/register', async (req, res) => {
             rank,
             wing: wing || 'Army',
             year,
+            dob,
             contact,
             email,
             college,
@@ -400,6 +448,226 @@ router.post('/update-account', async (req, res) => {
         res.json({ success: true, message: 'Account updated successfully!' });
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+});
+
+// @route   POST /api/auth/recover-account
+// @desc    Verify name, dob, mobile to retrieve login email ID and send a password-reset OTP
+router.post('/recover-account', async (req, res) => {
+    const { name, dob, contact } = req.body;
+
+    if (!name || !dob || !contact) {
+        return res.status(400).json({ message: 'Name, Date of Birth, and mobile number are required.' });
+    }
+
+    try {
+        // Look up cadet by name (case-insensitive regex), dob, and contact
+        const cadet = await Cadet.findOne({
+            name: { $regex: new RegExp("^" + name.trim() + "$", "i") },
+            dob: dob.trim(),
+            contact: contact.trim()
+        });
+
+        if (!cadet) {
+            return res.status(404).json({ message: 'No registered cadet found matching these recovery details.' });
+        }
+
+        const registeredEmail = cadet.email;
+
+        // Verify that the user account actually exists for this email
+        const user = await User.findOne({ email: registeredEmail });
+        if (!user) {
+            return res.status(404).json({ message: 'No user account exists for this cadet profile.' });
+        }
+
+        // Generate password-reset OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        otpStore.set(registeredEmail, otp);
+
+        // Send recovery email
+        const emailResult = await sendEmail({
+            to: registeredEmail,
+            subject: '1 DBN NCC Unit - Account Recovery Verification',
+            text: `Hello ${cadet.name},\n\nYour registered Official Email Address (Login ID) is: ${registeredEmail}\n\nYour account recovery verification OTP code is: ${otp}.\n\nThis code is valid for 15 minutes.\n\nBest Regards,\n1 DBN NCC Unit Admin`,
+            html: `<div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <h2 style="color: #FF9933; text-align: center;">1 DBN NCC Cadet Subunit</h2>
+                <hr/>
+                <p>Hello <strong>${cadet.name}</strong>,</p>
+                <p>You requested to recover your account credentials.</p>
+                <p>Your registered Official Email Address (Login ID) is:</p>
+                <div style="font-size: 18px; font-weight: bold; text-align: center; margin: 15px 0; padding: 10px; background-color: #f7f7f7; border: 1px solid #ddd; color: #128807;">
+                    ${registeredEmail}
+                </div>
+                <p>Your password reset OTP code is:</p>
+                <div style="font-size: 24px; font-weight: bold; letter-spacing: 2px; text-align: center; margin: 20px 0; padding: 10px; background-color: #f7f7f7; border: 1px dashed #FF9933; color: #FF9933;">
+                    ${otp}
+                </div>
+                <p>Enter this OTP code on the recovery screen to set your new password. This code is valid for 15 minutes.</p>
+                <br/>
+                <p>Best Regards,<br/><strong>1 DBN NCC Unit Admin</strong></p>
+            </div>`
+        });
+
+        let responseMsg = 'Recovery verification OTP has been sent to your registered email.';
+        if (emailResult.mock) {
+            responseMsg = `[Mock Mode] OTP sent (check server console)`;
+        }
+
+        res.json({
+            success: true,
+            email: registeredEmail,
+            message: responseMsg,
+            otp: emailResult.mock ? otp : undefined
+        });
+    } catch (err) {
+        console.error('Error in recover-account route:', err);
+        res.status(500).json({ message: 'Server error recovering account.' });
+    }
+});
+
+// @route   POST /api/auth/forgot-id
+// @desc    Retrieve official email address using DLI number and contact number
+router.post('/forgot-id', async (req, res) => {
+    const { enrollmentNo, contact } = req.body;
+
+    if (!enrollmentNo || !contact) {
+        return res.status(400).json({ message: 'DLI/Enrollment number and mobile number are required.' });
+    }
+
+    try {
+        const cadet = await Cadet.findOne({ 
+            $or: [
+                { enrollmentNo: enrollmentNo.trim() },
+                { dliNo: enrollmentNo.trim() }
+            ],
+            contact: contact.trim()
+        });
+
+        if (!cadet) {
+            return res.status(404).json({ message: 'No registered cadet found matching these details.' });
+        }
+
+        const registeredEmail = cadet.email;
+
+        // Send email with registered ID (email)
+        const emailResult = await sendEmail({
+            to: registeredEmail,
+            subject: '1 DBN NCC Unit - Login ID Recovery',
+            text: `Hello ${cadet.name},\n\nYour registered Official Email Address (Login ID) for the 1 DBN NCC Cadet Portal is:\n\n${registeredEmail}\n\nYou can use this ID to sign in at the cadet portal.\n\nBest Regards,\n1 DBN NCC Unit Admin`,
+            html: `<div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <h2 style="color: #FF9933; text-align: center;">1 DBN NCC Cadet Subunit</h2>
+                <hr/>
+                <p>Hello <strong>${cadet.name}</strong>,</p>
+                <p>You requested to recover your login credentials for the Cadet Portal.</p>
+                <p>Your registered Official Email Address (Login ID) is:</p>
+                <div style="font-size: 18px; font-weight: bold; text-align: center; margin: 20px 0; padding: 10px; background-color: #f7f7f7; border: 1px solid #ddd; color: #128807;">
+                    ${registeredEmail}
+                </div>
+                <p>You can use this email address to log in or to reset your password if needed.</p>
+                <br/>
+                <p>Best Regards,<br/><strong>1 DBN NCC Unit Admin</strong></p>
+            </div>`
+        });
+
+        let responseMsg = 'Your Login ID has been sent to your registered email address.';
+        if (emailResult.mock) {
+            responseMsg = `[Mock Mode] Login ID is ${registeredEmail} (sent to server console)`;
+        }
+
+        res.json({ success: true, message: responseMsg, email: emailResult.mock ? registeredEmail : undefined });
+    } catch (err) {
+        console.error('Error in forgot-id route:', err);
+        res.status(500).json({ message: 'Server error recovering Login ID.' });
+    }
+});
+
+// @route   POST /api/auth/forgot-password
+// @desc    Generate password-reset OTP and send to official email
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    try {
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (!user) {
+            return res.status(404).json({ message: 'No registered account found with this email address.' });
+        }
+
+        // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        otpStore.set(email.toLowerCase().trim(), otp);
+
+        const emailResult = await sendEmail({
+            to: email,
+            subject: '1 DBN NCC Unit - Password Reset OTP',
+            text: `Hello,\n\nYour 1 DBN NCC Cadet Portal password reset OTP code is: ${otp}.\n\nThis code is valid for 15 minutes. If you did not request this, please ignore this email.\n\nBest Regards,\n1 DBN NCC Unit Admin`,
+            html: `<div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <h2 style="color: #FF9933; text-align: center;">1 DBN NCC Cadet Subunit</h2>
+                <hr/>
+                <p>Hello,</p>
+                <p>You requested a password reset for your Cadet Portal account.</p>
+                <p>Your password reset OTP code is:</p>
+                <div style="font-size: 24px; font-weight: bold; letter-spacing: 2px; text-align: center; margin: 20px 0; padding: 10px; background-color: #f7f7f7; border: 1px dashed #FF9933; color: #FF9933;">
+                    ${otp}
+                </div>
+                <p>This code is valid for 15 minutes. If you did not request a password reset, please secure your account.</p>
+                <br/>
+                <p>Best Regards,<br/><strong>1 DBN NCC Unit Admin</strong></p>
+            </div>`
+        });
+
+        let responseMsg = 'A password reset OTP has been sent to your official email.';
+        if (emailResult.mock) {
+            responseMsg = `[Mock Mode] OTP sent (check server console)`;
+        }
+
+        res.json({ 
+            success: true, 
+            message: responseMsg, 
+            otp: emailResult.mock ? otp : undefined 
+        });
+    } catch (err) {
+        console.error('Error in forgot-password route:', err);
+        res.status(500).json({ message: 'Server error sending password reset OTP.' });
+    }
+});
+
+// @route   POST /api/auth/reset-password
+// @desc    Verify OTP and reset user password
+router.post('/reset-password', async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+        return res.status(400).json({ message: 'Email, OTP, and new password are required.' });
+    }
+
+    try {
+        const targetEmail = email.toLowerCase().trim();
+        const expectedOtp = otpStore.get(targetEmail);
+
+        if (!expectedOtp || expectedOtp !== otp.toString()) {
+            return res.status(400).json({ message: 'Invalid or expired OTP code.' });
+        }
+
+        const user = await User.findOne({ email: targetEmail });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Set and save new password
+        user.password = newPassword;
+        await user.save();
+
+        // Clear OTP
+        otpStore.delete(targetEmail);
+
+        res.json({ success: true, message: 'Password reset successful! You can now log in.' });
+    } catch (err) {
+        console.error('Error in reset-password route:', err);
+        res.status(500).json({ message: 'Server error resetting password.' });
     }
 });
 

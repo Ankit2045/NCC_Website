@@ -76,6 +76,23 @@ function AppContent() {
     const [phoneOtpInput, setPhoneOtpInput] = useState('');
     const [phoneSentOtpCode, setPhoneSentOtpCode] = useState('');
 
+    // Forgot ID / Password State
+    const [forgotMode, setForgotMode] = useState('menu'); // 'menu', 'id', 'password'
+    const [forgotDliNo, setForgotDliNo] = useState('');
+    const [forgotContact, setForgotContact] = useState('');
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotOtpSent, setForgotOtpSent] = useState(false);
+    const [forgotOtpInput, setForgotOtpInput] = useState('');
+    const [forgotNewPassword, setForgotNewPassword] = useState('');
+    const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+    const [forgotMsg, setForgotMsg] = useState('');
+    const [forgotError, setForgotError] = useState('');
+    
+    // DOB States (Phase 2)
+    const [regDob, setRegDob] = useState('');
+    const [forgotName, setForgotName] = useState('');
+    const [forgotDob, setForgotDob] = useState('');
+
     // Notice Board & Camp States
     const [noticeTitle, setNoticeTitle] = useState('');
     const [noticeBody, setNoticeBody] = useState('');
@@ -115,6 +132,7 @@ function AppContent() {
     const [cadetYear, setCadetYear] = useState('2');
     const [cadetContact, setCadetContact] = useState('');
     const [cadetEmail, setCadetEmail] = useState('');
+    const [cadetDob, setCadetDob] = useState('');
     const [adminCadetMsg, setAdminCadetMsg] = useState('');
 
     // Simulator Forms State
@@ -283,8 +301,9 @@ function AppContent() {
     };
 
     const handleSendPhoneOtp = async () => {
-        if (!regContact) {
-            alert('Please enter your Mobile Number first.');
+        const phoneRegex = /^\d{10}$/;
+        if (!regContact || !phoneRegex.test(regContact)) {
+            alert('Please enter a valid 10-digit mobile number.');
             return;
         }
         try {
@@ -325,6 +344,95 @@ function AppContent() {
         }
     };
 
+    const handleRecoverAccountVerify = async (e) => {
+        e.preventDefault();
+        setForgotMsg('');
+        setForgotError('');
+
+        if (!forgotName || !forgotDob || !forgotContact) {
+            setForgotError('Name, Date of Birth, and mobile number are required.');
+            return;
+        }
+
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(forgotContact)) {
+            setForgotError('Please enter a valid 10-digit mobile number.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/recover-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: forgotName, dob: forgotDob, contact: forgotContact })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setForgotEmail(data.email);
+                setForgotOtpSent(true);
+                setForgotMsg(data.message);
+                if (data.otp) {
+                    alert(`[Mock Mode] Account recovery OTP Sent! Copy Code: ${data.otp}`);
+                }
+            } else {
+                setForgotError(data.message || 'Verification failed. Please check your details.');
+            }
+        } catch (err) {
+            setForgotError('Error communicating with the server.');
+        }
+    };
+
+    const handleResetPasswordSubmit = async (e) => {
+        e.preventDefault();
+        setForgotMsg('');
+        setForgotError('');
+
+        if (!forgotEmail || !forgotOtpInput || !forgotNewPassword || !forgotConfirmPassword) {
+            setForgotError('All fields are required.');
+            return;
+        }
+
+        if (forgotNewPassword !== forgotConfirmPassword) {
+            setForgotError('Passwords do not match.');
+            return;
+        }
+
+        if (forgotNewPassword.length < 6) {
+            setForgotError('Password must be at least 6 characters long.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: forgotEmail,
+                    otp: forgotOtpInput,
+                    newPassword: forgotNewPassword
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert('Password reset successfully! You can now login with your new password.');
+                // Reset states and go back to login
+                setForgotMode('menu');
+                setForgotEmail('');
+                setForgotOtpSent(false);
+                setForgotOtpInput('');
+                setForgotNewPassword('');
+                setForgotConfirmPassword('');
+                setCurrentTab('login');
+            } else {
+                setForgotError(data.message || 'Failed to reset password.');
+            }
+        } catch (err) {
+            setForgotError('Error communicating with the server.');
+        }
+    };
+
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
         setRegMsg('');
@@ -336,6 +444,11 @@ function AppContent() {
         }
         if (!phoneOtpVerified) {
             setRegErrorMsg('Please verify your Mobile Number with OTP.');
+            return;
+        }
+        const phoneRegex = /^\d{10}$/;
+        if (!regContact || !phoneRegex.test(regContact)) {
+            setRegErrorMsg('Mobile number must be exactly 10 digits.');
             return;
         }
         if (!regDliNo || (!regDliNo.startsWith('DL2024') && !regDliNo.startsWith('DL2025'))) {
@@ -357,6 +470,7 @@ function AppContent() {
                     contact: regContact,
                     email: regEmail,
                     password: regPassword,
+                    dob: regDob,
                     college: regCollege,
                     dliNo: regDliNo,
                     bloodGroup: regBloodGroup,
@@ -562,7 +676,8 @@ function AppContent() {
             wing: cadetWing,
             year: parseInt(cadetYear),
             contact: cadetContact,
-            email: cadetEmail
+            email: cadetEmail,
+            dob: cadetDob
         };
 
         try {
@@ -589,6 +704,7 @@ function AppContent() {
                 setCadetEnrollment('');
                 setCadetContact('');
                 setCadetEmail('');
+                setCadetDob('');
                 fetchAdminData();
             } else {
                 setAdminCadetMsg(data.message || 'Operation failed.');
@@ -608,6 +724,7 @@ function AppContent() {
         setCadetYear(String(c.year));
         setCadetContact(c.contact);
         setCadetEmail(c.email);
+        setCadetDob(c.dob || '');
         document.getElementById('cadet-form-section')?.scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -1402,7 +1519,162 @@ function AppContent() {
                                         <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }}>
                                             Sign In
                                         </button>
+                                        <div style={{ textAlign: 'center', marginTop: '15px' }}>
+                                            <a 
+                                                href="#" 
+                                                onClick={(e) => { 
+                                                    e.preventDefault(); 
+                                                    setForgotMode('menu'); 
+                                                    setForgotMsg('');
+                                                    setForgotError('');
+                                                    setCurrentTab('forgot'); 
+                                                }} 
+                                                style={{ fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: '600' }}
+                                            >
+                                                Forgot ID or Password?
+                                            </a>
+                                        </div>
                                     </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Forgot ID / Password Recovery View */}
+                                {/* Forgot ID / Password Recovery View */}
+                {currentTab === 'forgot' && (
+                    <div className="view-section active">
+                        <div className="login-container">
+                            <div className="login-card" style={{ padding: '0', overflow: 'hidden' }}>
+                                <div style={{ height: '5px', background: 'linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #128807 100%)' }}></div>
+                                <div style={{ padding: '35px' }}>
+                                    <img 
+                                        src="dtu_ncc_logo_transparent.png" 
+                                        alt="DTU NCC Logo" 
+                                        style={{ height: '75px', display: 'block', margin: '0 auto 15px auto', filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.15))' }} 
+                                    />
+                                    
+                                    <h3 className="login-title" style={{ textAlign: 'center', fontSize: '1.25rem', borderBottom: 'none', paddingBottom: '0', marginBottom: '20px', color: 'var(--primary)', fontWeight: '700' }}>
+                                        ACCOUNT RECOVERY
+                                    </h3>
+                                    {forgotError && (
+                                        <div className="alert alert-danger" style={{ marginBottom: '15px', fontSize: '0.85rem' }}>
+                                            <i className="fa-solid fa-triangle-exclamation"></i> {forgotError}
+                                        </div>
+                                    )}
+                                    {forgotMsg && (
+                                        <div className="alert alert-success" style={{ marginBottom: '15px', fontSize: '0.85rem' }}>
+                                            <i className="fa-solid fa-circle-check"></i> {forgotMsg}
+                                        </div>
+                                    )}
+                                    
+                                    {!forgotOtpSent ? (
+                                        <form onSubmit={handleRecoverAccountVerify}>
+                                            <div className="form-group">
+                                                <label className="form-label">Full Name *</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="form-control" 
+                                                    placeholder="E.g., Cdt Rohit Sharma"
+                                                    value={forgotName}
+                                                    onChange={(e) => setForgotName(e.target.value)}
+                                                    required 
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Date of Birth *</label>
+                                                <input 
+                                                    type="date" 
+                                                    className="form-control" 
+                                                    value={forgotDob}
+                                                    onChange={(e) => setForgotDob(e.target.value)}
+                                                    required 
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">10-Digit Mobile Number *</label>
+                                                <input 
+                                                    type="tel" 
+                                                    maxLength={10}
+                                                    className="form-control" 
+                                                    placeholder="E.g., 9876543214"
+                                                    value={forgotContact}
+                                                    onChange={(e) => setForgotContact(e.target.value.replace(/\D/g, ''))}
+                                                    required 
+                                                />
+                                            </div>
+                                            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }}>
+                                                Verify & Send OTP
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                className="btn" 
+                                                onClick={() => {
+                                                    setForgotName('');
+                                                    setForgotDob('');
+                                                    setForgotContact('');
+                                                    setCurrentTab('login');
+                                                }}
+                                                style={{ width: '100%', justifyContent: 'center', marginTop: '10px', backgroundColor: '#f0f0f0', color: '#333' }}
+                                            >
+                                                Back to Login
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <form onSubmit={handleResetPasswordSubmit}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontWeight: '600' }}>Recovered Official Email (ID)</label>
+                                                <div style={{ padding: '10px', backgroundColor: '#f9f9f9', border: '1px solid #ddd', borderRadius: 'var(--radius-sm)', color: 'var(--success)', fontWeight: 'bold', fontSize: '0.95rem' }}>
+                                                    {forgotEmail}
+                                                </div>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">OTP Code *</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="form-control" 
+                                                    placeholder="6-Digit Reset OTP"
+                                                    value={forgotOtpInput}
+                                                    onChange={(e) => setForgotOtpInput(e.target.value)}
+                                                    required 
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">New Password *</label>
+                                                <input 
+                                                    type="password" 
+                                                    className="form-control" 
+                                                    placeholder="Min 6 characters"
+                                                    value={forgotNewPassword}
+                                                    onChange={(e) => setForgotNewPassword(e.target.value)}
+                                                    required 
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Confirm New Password *</label>
+                                                <input 
+                                                    type="password" 
+                                                    className="form-control" 
+                                                    placeholder="Confirm your password"
+                                                    value={forgotConfirmPassword}
+                                                    onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                                                    required 
+                                                />
+                                            </div>
+                                            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }}>
+                                                Reset Password & Login
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                className="btn" 
+                                                onClick={() => setForgotOtpSent(false)}
+                                                style={{ width: '100%', justifyContent: 'center', marginTop: '10px', backgroundColor: '#f0f0f0', color: '#333' }}
+                                            >
+                                                Back
+                                            </button>
+                                        </form>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1440,6 +1712,10 @@ function AppContent() {
                                             <div className="form-group">
                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
                                                 <input type="text" className="form-control" placeholder="E.g., Ankit Kumar" value={regName} onChange={(e) => setRegName(e.target.value)} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Date of Birth *</label>
+                                                <input type="date" className="form-control" value={regDob} onChange={(e) => setRegDob(e.target.value)} required />
                                             </div>
 
                                             <div className="form-group">
@@ -1561,11 +1837,12 @@ function AppContent() {
                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Mobile Number *</label>
                                                 <div style={{ display: 'flex', gap: '10px' }}>
                                                     <input 
-                                                        type="text" 
+                                                        type="tel" 
+                                                        maxLength={10}
                                                         className="form-control" 
                                                         placeholder="10-digit mobile number" 
                                                         value={regContact} 
-                                                        onChange={(e) => setRegContact(e.target.value)} 
+                                                        onChange={(e) => setRegContact(e.target.value.replace(/\D/g, ''))} 
                                                         disabled={phoneOtpVerified}
                                                         required 
                                                     />
@@ -2509,77 +2786,83 @@ function AppContent() {
                                                 </table>
                                             </div>
 
-                                            {/* Cadet CRUD form */}
-                                            <div id="cadet-form-section" style={{ marginTop: '30px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
-                                                <h4 style={{ color: 'var(--primary)', fontSize: '0.95rem', textTransform: 'uppercase', marginBottom: '15px', fontWeight: '700' }}>
-                                                    <i className="fa-solid fa-user-pen"></i> {editingCadetId ? 'Update Cadet Record' : 'Enroll New Cadet'}
-                                                </h4>
-                                                {adminCadetMsg && <div className="alert alert-success" style={{ marginBottom: '15px', fontSize: '0.85rem' }}>{adminCadetMsg}</div>}
-                                                <form onSubmit={handleCadetSubmit}>
-                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
-                                                            <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetName} onChange={(e) => setCadetName(e.target.value)} required />
+                                            {/* Cadet CRUD form (Only shown when editing) */}
+                                            {editingCadetId && (
+                                                <div id="cadet-form-section" style={{ marginTop: '30px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                                                    <h4 style={{ color: 'var(--primary)', fontSize: '0.95rem', textTransform: 'uppercase', marginBottom: '15px', fontWeight: '700' }}>
+                                                        <i className="fa-solid fa-user-pen"></i> Update Cadet Record
+                                                    </h4>
+                                                    {adminCadetMsg && <div className="alert alert-success" style={{ marginBottom: '15px', fontSize: '0.85rem' }}>{adminCadetMsg}</div>}
+                                                    <form onSubmit={handleCadetSubmit}>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
+                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetName} onChange={(e) => setCadetName(e.target.value)} required />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Date of Birth *</label>
+                                                                <input type="date" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetDob} onChange={(e) => setCadetDob(e.target.value)} required />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Regimental No *</label>
+                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetEnrollment} onChange={(e) => setCadetEnrollment(e.target.value)} required />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Squadron *</label>
+                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetSquadron} onChange={(e) => setCadetSquadron(e.target.value)} required>
+                                                                    <option value="hq">Headquarters (HQ)</option>
+                                                                    <option value="alpha">Alpha</option>
+                                                                    <option value="bravo">Bravo</option>
+                                                                    <option value="charlie">Charlie</option>
+                                                                    <option value="delta">Delta</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Rank *</label>
+                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetRank} onChange={(e) => setCadetRank(e.target.value)} required>
+                                                                    <option value="Cadet">Cadet (Cdt)</option>
+                                                                    <option value="L/Cpl">Lance Corporal (L/Cpl)</option>
+                                                                    <option value="Cpl">Corporal (Cpl)</option>
+                                                                    <option value="Sgt">Sergeant (Sgt)</option>
+                                                                    <option value="CSM">Company Sergeant Major (CSM)</option>
+                                                                    <option value="CQMS">Company Quartermaster Sergeant (CQMS)</option>
+                                                                    <option value="JUO">Junior Under Officer (JUO)</option>
+                                                                    <option value="SUO">Senior Under Officer (SUO)</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Wing *</label>
+                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetWing} onChange={(e) => setCadetWing(e.target.value)} required>
+                                                                    <option value="Army">Army</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Cadet Year *</label>
+                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetYear} onChange={(e) => setCadetYear(e.target.value)} required>
+                                                                    <option value="2">2nd Year</option>
+                                                                    <option value="3">3rd Year</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Contact Number *</label>
+                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetContact} onChange={(e) => setCadetContact(e.target.value)} required />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Email Address (@dtuncc.in) *</label>
+                                                                <input type="email" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetEmail} onChange={(e) => setCadetEmail(e.target.value)} required />
+                                                            </div>
                                                         </div>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Regimental No *</label>
-                                                            <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetEnrollment} onChange={(e) => setCadetEnrollment(e.target.value)} required />
-                                                        </div>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Squadron *</label>
-                                                            <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetSquadron} onChange={(e) => setCadetSquadron(e.target.value)} required>
-                                                                <option value="hq">Headquarters (HQ)</option>
-                                                                <option value="alpha">Alpha</option>
-                                                                <option value="bravo">Bravo</option>
-                                                                <option value="charlie">Charlie</option>
-                                                                <option value="delta">Delta</option>
-                                                            </select>
-                                                        </div>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Rank *</label>
-                                                            <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetRank} onChange={(e) => setCadetRank(e.target.value)} required>
-                                                                <option value="Cdt">Cadet (Cdt)</option>
-                                                                <option value="Lcp">Lance Corporal (Lcp)</option>
-                                                                <option value="Cpl">Corporal (Cpl)</option>
-                                                                <option value="Sgt">Sergeant (Sgt)</option>
-                                                                <option value="JUO">Junior Under Officer (JUO)</option>
-                                                                <option value="SUO">Senior Under Officer (SUO)</option>
-                                                            </select>
-                                                        </div>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Wing *</label>
-                                                            <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetWing} onChange={(e) => setCadetWing(e.target.value)} required>
-                                                                <option value="Army">Army</option>
-                                                            </select>
-                                                        </div>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Cadet Year *</label>
-                                                            <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetYear} onChange={(e) => setCadetYear(e.target.value)} required>
-                                                                <option value="2">2nd Year</option>
-                                                                <option value="3">3rd Year</option>
-                                                            </select>
-                                                        </div>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Contact Number *</label>
-                                                            <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetContact} onChange={(e) => setCadetContact(e.target.value)} required />
-                                                        </div>
-                                                        <div className="form-group">
-                                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Email Address (@dtuncc.in) *</label>
-                                                            <input type="email" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetEmail} onChange={(e) => setCadetEmail(e.target.value)} required />
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                                                        <button type="submit" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
-                                                            <i className="fa-solid fa-floppy-disk"></i> {editingCadetId ? 'Save Updates' : 'Enroll Cadet'}
-                                                        </button>
-                                                        {editingCadetId && (
-                                                            <button type="button" className="btn btn-outline" onClick={() => { setEditingCadetId(null); setCadetName(''); setCadetEnrollment(''); setCadetContact(''); setCadetEmail(''); }} style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
+                                                        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                                                            <button type="submit" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
+                                                                <i className="fa-solid fa-floppy-disk"></i> Save Updates
+                                                            </button>
+                                                            <button type="button" className="btn btn-outline" onClick={() => { setEditingCadetId(null); setCadetName(''); setCadetEnrollment(''); setCadetContact(''); setCadetEmail(''); setCadetDob(''); }} style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
                                                                 Cancel
                                                             </button>
-                                                        )}
-                                                    </div>
-                                                </form>
-                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Fines and logs summary side-by-side */}
@@ -2898,6 +3181,7 @@ function AppContent() {
                                 {/* Block 1: Basic & Academic */}
                                 <div>
                                     <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Academic & College Details</h4>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Date of Birth</strong>: {selectedViewCadet.dob || 'N/A'}</p>
                                     <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>College</strong>: {selectedViewCadet.college || 'DTU'}</p>
                                     <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Course</strong>: {selectedViewCadet.course || 'N/A'}</p>
                                     <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Branch</strong>: {selectedViewCadet.branch || 'N/A'}</p>

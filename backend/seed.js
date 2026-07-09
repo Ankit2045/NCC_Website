@@ -41,6 +41,7 @@ const seedDB = async () => {
             college: "DTU",
             dliNo: "DL2024HQ001",
             bloodGroup: "O+",
+            dob: "2004-01-01",
             approved: true
         });
         await suoCadet.save();
@@ -58,6 +59,7 @@ const seedDB = async () => {
             college: "DTU",
             dliNo: "DL2024HQ002",
             bloodGroup: "A+",
+            dob: "2004-02-02",
             approved: true
         });
         await csmCadet.save();
@@ -75,6 +77,7 @@ const seedDB = async () => {
             college: "DTU",
             dliNo: "DL2024HQ003",
             bloodGroup: "B+",
+            dob: "2004-03-03",
             approved: true
         });
         await cqmsCadet.save();
@@ -92,6 +95,7 @@ const seedDB = async () => {
             college: "DTU",
             dliNo: "DL2024HQ004",
             bloodGroup: "AB+",
+            dob: "2004-04-04",
             approved: true
         });
         await juoCadet.save();
@@ -162,6 +166,7 @@ const seedDB = async () => {
             college: "DTU",
             dliNo: "DL2024AL005",
             bloodGroup: "O-",
+            dob: "2005-05-05",
             approved: true
         });
         await cadetCadet.save();

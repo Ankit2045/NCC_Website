@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 // POST create a cadet
 router.post('/', async (req, res) => {
     const {
-        name, enrollmentNo, squadron, rank, wing, year, contact, email,
+        name, enrollmentNo, squadron, rank, wing, year, contact, email, dob,
         college, dliNo, bloodGroup, course, branch, collegeRollNo, academicYear,
         altContact, address, residenceType, city, pincode, fatherName, motherName,
         guardianName, allergies, medicalConditions, medications, campsAttended, otherDetails
@@ -39,6 +39,7 @@ router.post('/', async (req, res) => {
             rank,
             wing,
             year,
+            dob,
             contact,
             email,
             college: defCollege,
@@ -89,7 +90,7 @@ router.post('/', async (req, res) => {
 // PUT update a cadet
 router.put('/:id', async (req, res) => {
     const {
-        name, enrollmentNo, squadron, rank, wing, year, contact, email,
+        name, enrollmentNo, squadron, rank, wing, year, contact, email, dob,
         college, dliNo, bloodGroup, course, branch, collegeRollNo, academicYear,
         altContact, address, residenceType, city, pincode, fatherName, motherName,
         guardianName, allergies, medicalConditions, medications, campsAttended, otherDetails
@@ -109,6 +110,7 @@ router.put('/:id', async (req, res) => {
         cadet.year = year;
         cadet.contact = contact;
         cadet.email = email;
+        if (dob) cadet.dob = dob;
 
         if (college) cadet.college = college;
         if (dliNo) cadet.dliNo = dliNo;

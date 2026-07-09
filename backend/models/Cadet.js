@@ -42,6 +42,11 @@ const CadetSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    dob: {
+        type: String,
+        required: true,
+        trim: true
+    },
     contact: {
         type: String,
         required: true,
