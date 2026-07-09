@@ -272,7 +272,11 @@ function AppContent() {
             if (res.ok) {
                 setEmailOtpSent(true);
                 setEmailSentOtpCode(data.otp);
-                alert(`Simulated Email OTP Sent! Copy Code: ${data.otp}`);
+                if (data.otp) {
+                    alert(`[Mock Mode] Email OTP Sent! Copy Code: ${data.otp}`);
+                } else {
+                    alert(`Verification OTP has been sent to your email address: ${regEmail}. Please check your inbox.`);
+                }
             } else {
                 alert(data.message || 'Failed to send OTP');
             }
@@ -1981,8 +1985,20 @@ function AppContent() {
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '35px', maxWidth: '1000px', margin: '0 auto' }}>
                                 
-                                {/* 1. Supreme Command (ANO & SUO) */}
+                                {/* 1. Patron & Supreme Command (VC & ANO) */}
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                                    {/* VC Card */}
+                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--primary)' }}>
+                                        <div style={{ width: '90px', height: '110px', minWidth: '90px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <i className="fa-solid fa-graduation-cap" style={{ fontSize: '2rem', color: 'var(--primary)' }}></i>
+                                        </div>
+                                        <div style={{ textAlign: 'left' }}>
+                                            <span className="badge badge-primary" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.65rem' }}>Honorary Colonel</span>
+                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Prof. Prateek Sharma</h3>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Vice Chancellor, DTU (Patron)</p>
+                                        </div>
+                                    </div>
+
                                     {/* ANO Card */}
                                     <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--saffron)' }}>
                                         <img src="gallery/ano_raghvender.jpg" alt="Lt. Dr. Raghveder Gautam" style={{ width: '90px', height: '110px', minWidth: '90px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
@@ -1992,26 +2008,38 @@ function AppContent() {
                                             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Unit Commander & Officer in Charge</p>
                                         </div>
                                     </div>
+                                </div>
 
+                                {/* 2. Command Command (SUO & JUO 2IC) */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
                                     {/* SUO Card */}
                                     <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--army-red)' }}>
                                         <img src="gallery/suo_piyush.jpg" alt="SUO Piyush Kumar" style={{ width: '90px', height: '110px', minWidth: '90px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
                                         <div style={{ textAlign: 'left' }}>
                                             <span className="badge badge-danger" style={{ backgroundColor: 'var(--army-red)', color: '#fff', fontSize: '0.65rem' }}>Senior Under Officer (SUO)</span>
                                             <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Piyush Kumar</h3>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Cadet Commander & Senior Command Representative</p>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Cadet Commander</p>
+                                        </div>
+                                    </div>
+
+                                    {/* JUO 2IC Card (Ankit Kumar) */}
+                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--secondary)' }}>
+                                        <img src="gallery/juo_ankit.jpg" alt="JUO Ankit Kumar" style={{ width: '90px', height: '110px', minWidth: '90px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+                                        <div style={{ textAlign: 'left' }}>
+                                            <span className="badge" style={{ backgroundColor: 'var(--secondary)', color: '#fff', fontSize: '0.65rem' }}>JUO - Second in Command (2IC)</span>
+                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Ankit Kumar</h3>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Junior Under Officer & 2IC</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* 2. Junior Under Officers (JUO) */}
+                                {/* 3. Junior Under Officers (JUOs) */}
                                 <div>
                                     <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
                                         Junior Under Officers (JUO)
                                     </h3>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
                                         {[
-                                            { name: "Ankit Kumar", img: "gallery/juo_ankit.jpg" },
                                             { name: "Abhinav Kumar", img: "gallery/juo_abhinav.png" },
                                             { name: "Adamya Naorem", img: "gallery/juo_adamya.png" },
                                             { name: "Samarth Kadyan", img: "gallery/juo_samarth.png" }
@@ -2034,7 +2062,7 @@ function AppContent() {
                                     </div>
                                 </div>
 
-                                {/* 3. CSM */}
+                                {/* 4. CSM */}
                                 <div style={{ marginBottom: '25px' }}>
                                     <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
                                         Company Sergeant Major (CSM)
@@ -2062,7 +2090,7 @@ function AppContent() {
                                     </div>
                                 </div>
 
-                                {/* 4. CQMS */}
+                                {/* 5. CQMS */}
                                 <div style={{ marginBottom: '25px' }}>
                                     <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
                                         Company Quartermaster Sergeant (CQMS)
@@ -2078,7 +2106,7 @@ function AppContent() {
                                     </div>
                                 </div>
 
-                                {/* 4. Sergeants (Sgt) */}
+                                {/* 6. Sergeants (Sgt) */}
                                 <div>
                                     <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
                                         Sergeants (Sgt)
@@ -2096,7 +2124,7 @@ function AppContent() {
                                     </div>
                                 </div>
 
-                                {/* 5. Corporals (Cpl) */}
+                                {/* 7. Corporals (Cpl) */}
                                 <div>
                                     <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
                                         Corporals (Cpl)
@@ -2114,7 +2142,7 @@ function AppContent() {
                                     </div>
                                 </div>
 
-                                {/* 6. Lance Corporals (L/CPL) */}
+                                {/* 8. Lance Corporals (L/CPL) */}
                                 <div>
                                     <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
                                         Lance Corporals (L/CPL)
@@ -2135,9 +2163,7 @@ function AppContent() {
                             </div>
                         </div>
                     </div>
-                )}
-
-                {/* 7. Cadet / Admin Portal View */}
+                )}                {/* 7. Cadet / Admin Portal View */}
                 {currentTab === 'dashboard' && user && (
                     <div className="view-section active">
                         {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? (
