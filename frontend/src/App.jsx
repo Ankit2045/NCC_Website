@@ -1288,7 +1288,7 @@ function AppContent() {
                                 </div>
                                 
                                 <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
-                                    <img src="gallery/adg_avatar.png" alt="Maj Gen Ravinder Kumar Dabas" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
+                                    <img src="gallery/adg_ravinder.png" alt="Maj Gen Ravinder Kumar Dabas" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
                                     <span className="badge badge-success" style={{ fontSize: '0.72rem', padding: '4px 8px' }}>Addl Director General (ADG)</span>
                                     <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Maj Gen Ravinder Kumar Dabas, SM, VSM</h4>
                                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>ADG Delhi Directorate</p>
@@ -2190,7 +2190,7 @@ function AppContent() {
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
                                             {[
-                                                { name: "Akshat Tiwari", img: null },
+                                                { name: "Akshat Tiwari", img: "gallery/csm_akshat.png" },
                                                 { name: "Shreyansh Gupta", img: "gallery/csm_shreyansh.jpg" }
                                             ].map((csm, idx) => (
                                                 <span key={idx}>{renderProfileCard(csm.name, "Company Sergeant Major", "var(--secondary)", "var(--secondary)", csm.img)}</span>
@@ -2215,10 +2215,14 @@ function AppContent() {
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
                                             {[
-                                                "Shivam Pandey", "M. Vishnu", "Ritik Thakur",
-                                                "Nishant Tiwari", "Mayank Rohilla (PT)", "Pratik (Media)"
-                                            ].map((name, idx) => (
-                                                <span key={idx}>{renderProfileCard(name, "Sergeant", "var(--text-muted)", "var(--text-muted)", null)}</span>
+                                                { name: "Shivam Pandey", img: null },
+                                                { name: "M. Vishnu", img: null },
+                                                { name: "Ritik Thakur", img: null },
+                                                { name: "Nishant Tiwari", img: null },
+                                                { name: "Mayank Rohilla (PT)", img: null },
+                                                { name: "Pratik (Media)", img: "gallery/sgt_pratik.png" }
+                                            ].map((sgt, idx) => (
+                                                <span key={idx}>{renderProfileCard(sgt.name, "Sergeant", "var(--text-muted)", "var(--text-muted)", sgt.img)}</span>
                                             ))}
                                         </div>
                                     </div>
