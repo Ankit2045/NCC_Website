@@ -2533,7 +2533,7 @@ function AppContent() {
                             <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
                                 <div className="section-header">
                                     <h2>Command Leadership Rank Panel (2026-27)</h2>
-                                    <p>Hierarchy, NCO commands, and cadet leadership chain of 1 DBN NCC Unit, DTU</p>
+                                    <p>Hierarchy and cadet leadership chain of 1 DBN NCC Unit, DTU</p>
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '35px', maxWidth: '1000px', margin: '0 auto' }}>
