@@ -23,6 +23,7 @@ function AppContent() {
     const [settingsMsg, setSettingsMsg] = useState('');
     const [settingsError, setSettingsError] = useState('');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
     // Login Form State
     const [loginEmail, setLoginEmail] = useState('');
@@ -1037,81 +1038,150 @@ function AppContent() {
                         <li><a href="#" className={`nav-link ${currentTab === 'contact' ? 'active' : ''}`} onClick={() => { setCurrentTab('contact'); setMobileMenuOpen(false); }}>Notices & Help</a></li>
                         
                         {!user && (
-                            <li><a href="#" className={`nav-link ${currentTab === 'register' ? 'active' : ''}`} onClick={() => { setCurrentTab('register'); setMobileMenuOpen(false); }}>Cadet Registration</a></li>
-                        )}
-                        
-                        {user && (
                             <>
+                                <li><a href="#" className={`nav-link ${currentTab === 'register' ? 'active' : ''}`} onClick={() => { setCurrentTab('register'); setMobileMenuOpen(false); }}>Cadet Registration</a></li>
                                 <li>
-                                    <a 
-                                        href="#" 
-                                        className={`nav-link ${currentTab === 'dashboard' ? 'active' : ''}`} 
-                                        onClick={() => { setCurrentTab('dashboard'); setMobileMenuOpen(false); }}
-                                    >
-                                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
-                                    </a>
+                                    <button className="btn btn-primary" onClick={() => { setLoginError(''); setCurrentTab('login'); setMobileMenuOpen(false); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+                                        <i className="fa-solid fa-right-to-bracket"></i> Cadet Login
+                                    </button>
                                 </li>
-                                {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
-                                    <>
-                                        <li>
-                                            <a 
-                                                href="#" 
-                                                className={`nav-link ${currentTab === 'requests' ? 'active' : ''}`} 
-                                                onClick={() => { setCurrentTab('requests'); setMobileMenuOpen(false); }}
-                                            >
-                                                Requests
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a 
-                                                href="#" 
-                                                className={`nav-link ${currentTab === 'directory' ? 'active' : ''}`} 
-                                                onClick={() => { setCurrentTab('directory'); setMobileMenuOpen(false); }}
-                                            >
-                                                Cadet Directory
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a 
-                                                href="#" 
-                                                className={`nav-link ${currentTab === 'squadrons' ? 'active' : ''}`} 
-                                                onClick={() => { setCurrentTab('squadrons'); setMobileMenuOpen(false); }}
-                                            >
-                                                Sqn List
-                                            </a>
-                                        </li>
-                                    </>
-                                )}
                             </>
                         )}
+                        
                         {user && (
-                            <li>
+                            <li style={{ position: 'relative' }}>
                                 <a 
                                     href="#" 
-                                    className={`nav-link ${currentTab === 'settings' ? 'active' : ''}`} 
-                                    onClick={() => {
-                                        setSettingsMsg('');
-                                        setSettingsError('');
-                                        setCurrentTab('settings');
-                                        setMobileMenuOpen(false);
+                                    className={`nav-link ${['dashboard', 'requests', 'directory', 'squadrons', 'settings'].includes(currentTab) ? 'active' : ''}`}
+                                    onClick={(e) => { 
+                                        e.preventDefault(); 
+                                        setAccountDropdownOpen(!accountDropdownOpen); 
                                     }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                                 >
-                                    <i className="fa-solid fa-user-gear"></i> Settings
+                                    <i className="fa-solid fa-circle-user" style={{ fontSize: '1.1rem' }}></i> My Account <i className={`fa-solid fa-chevron-${accountDropdownOpen ? 'up' : 'down'}`} style={{ fontSize: '0.7rem' }}></i>
                                 </a>
+                                
+                                {accountDropdownOpen && (
+                                    <ul className="account-dropdown-menu" style={{ 
+                                        backgroundColor: '#fff', 
+                                        border: '1px solid var(--border)', 
+                                        borderRadius: 'var(--radius-md)', 
+                                        boxShadow: 'var(--shadow-md)', 
+                                        padding: '10px 0', 
+                                        minWidth: '200px', 
+                                        zIndex: 1001,
+                                        listStyle: 'none',
+                                        textAlign: 'left'
+                                    }}>
+                                        <li>
+                                            <a 
+                                                href="#" 
+                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setCurrentTab('dashboard');
+                                                    setAccountDropdownOpen(false);
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                            >
+                                                <i className="fa-solid fa-gauge" style={{ width: '20px', color: 'var(--primary)' }}></i> {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
+                                            </a>
+                                        </li>
+                                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                                            <>
+                                                <li>
+                                                    <a 
+                                                        href="#" 
+                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentTab('requests');
+                                                            setAccountDropdownOpen(false);
+                                                            setMobileMenuOpen(false);
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-user-clock" style={{ width: '20px', color: 'var(--primary)' }}></i> Requests
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a 
+                                                        href="#" 
+                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentTab('directory');
+                                                            setAccountDropdownOpen(false);
+                                                            setMobileMenuOpen(false);
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-address-book" style={{ width: '20px', color: 'var(--primary)' }}></i> Cadet Directory
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a 
+                                                        href="#" 
+                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentTab('squadrons');
+                                                            setAccountDropdownOpen(false);
+                                                            setMobileMenuOpen(false);
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-users" style={{ width: '20px', color: 'var(--primary)' }}></i> Sqn List
+                                                    </a>
+                                                </li>
+                                            </>
+                                        )}
+                                        <li>
+                                            <a 
+                                                href="#" 
+                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setSettingsMsg('');
+                                                    setSettingsError('');
+                                                    setCurrentTab('settings');
+                                                    setAccountDropdownOpen(false);
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                            >
+                                                <i className="fa-solid fa-user-gear" style={{ width: '20px', color: 'var(--primary)' }}></i> Settings
+                                            </a>
+                                        </li>
+                                        <li style={{ borderTop: '1px solid var(--border)', margin: '5px 0' }}></li>
+                                        <li>
+                                            <a 
+                                                href="#" 
+                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--danger)', textDecoration: 'none', transition: 'background 0.2s', fontWeight: '600' }}
+                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    logout();
+                                                    setCurrentTab('home');
+                                                    setAccountDropdownOpen(false);
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                            >
+                                                <i className="fa-solid fa-right-from-bracket" style={{ width: '20px', color: 'var(--danger)' }}></i> Logout
+                                            </a>
+                                        </li>
+                                    </ul>
+                                )}
                             </li>
                         )}
-                        
-                        <li>
-                            {user ? (
-                                <button className="btn btn-outline" onClick={() => { logout(); setCurrentTab('home'); setMobileMenuOpen(false); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                                    <i className="fa-solid fa-right-from-bracket"></i> Logout ({user.role === 'admin' ? 'Admin' : user.role === 'ano' ? 'ANO' : user.role === 'suo' ? 'SUO' : user.role === 'csm' ? 'CSM' : user.role === 'cqms' ? 'CQMS' : user.role === 'juo' ? 'JUO' : (cadet?.name || 'Cadet')})
-                                </button>
-                            ) : (
-                                <button className="btn btn-primary" onClick={() => { setLoginError(''); setCurrentTab('login'); setMobileMenuOpen(false); }} style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                                    <i className="fa-solid fa-right-to-bracket"></i> Cadet Login
-                                </button>
-                            )}
-                        </li>
                     </ul>
                 </nav>
             </header>
