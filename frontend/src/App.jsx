@@ -957,7 +957,7 @@ function AppContent() {
                             <tr key={c._id}>
                                 <td>
                                     <button 
-                                        onClick={() => setSelectedViewCadet(c)}
+                                        onClick={() => setSelectedViewCadet({ ...c })}
                                         style={{ background: 'none', border: 'none', color: borderTheme, fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
                                         title="View full cadet profile details"
                                     >
@@ -2615,7 +2615,7 @@ function AppContent() {
                                                                                 <tr key={c._id}>
                                                                                     <td>
                                                                                         <button 
-                                                                                            onClick={() => setSelectedViewCadet(c)}
+                                                                                            onClick={() => setSelectedViewCadet({ ...c })}
                                                                                             style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
                                                                                         >
                                                                                             {c.rank} {c.name}
@@ -2715,7 +2715,7 @@ function AppContent() {
                                                                     <tr key={c._id}>
                                                                         <td>
                                                                             <button 
-                                                                                onClick={() => setSelectedViewCadet(c)}
+                                                                                onClick={() => setSelectedViewCadet({ ...c })}
                                                                                 style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
                                                                             >
                                                                                 {c.name}
@@ -2774,7 +2774,7 @@ function AppContent() {
                                                                 <tr key={c._id}>
                                                                     <td>
                                                                         <button 
-                                                                            onClick={() => setSelectedViewCadet(c)}
+                                                                            onClick={() => setSelectedViewCadet({ ...c })}
                                                                             style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
                                                                             title="View full cadet profile details"
                                                                         >
@@ -3198,7 +3198,7 @@ function AppContent() {
                 )}
                 {selectedViewCadet && (
                     <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 11000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-                        <div className="profile-card" style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', padding: '30px', position: 'relative', textAlign: 'left', borderTop: '5px solid var(--saffron)' }}>
+                        <div className="profile-card" style={{ maxWidth: '900px', width: '100%', maxHeight: '90vh', overflowY: 'auto', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', padding: '30px', position: 'relative', textAlign: 'left', borderTop: '5px solid var(--primary)' }}>
                             <button 
                                 onClick={() => setSelectedViewCadet(null)} 
                                 style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-muted)' }}
@@ -3206,77 +3206,240 @@ function AppContent() {
                                 <i className="fa-solid fa-xmark"></i>
                             </button>
                             
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
-                                <div style={{ width: '80px', height: '100px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#f0f4f8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                    <i className="fa-solid fa-user-shield" style={{ fontSize: '2rem', color: 'var(--text-muted)' }}></i>
-                                    <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', marginTop: '4px' }}>Profile</span>
-                                </div>
-                                <div>
-                                    <span className="badge" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.75rem', padding: '4px 8px', textTransform: 'uppercase' }}>{selectedViewCadet.rank}</span>
-                                    <h2 style={{ margin: '8px 0 4px 0', fontSize: '1.6rem', color: 'var(--navy-blue)', fontWeight: '700' }}>{selectedViewCadet.name}</h2>
-                                    <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)' }}>DLI: <strong>{selectedViewCadet.enrollmentNo || selectedViewCadet.dliNo}</strong> | Squadron: <strong style={{ textTransform: 'uppercase' }}>{selectedViewCadet.squadron}</strong></p>
-                                </div>
-                            </div>
+                            <h2 style={{ margin: '0 0 20px 0', fontSize: '1.4rem', color: 'var(--navy-blue)', fontWeight: '700', borderBottom: '1px solid var(--border)', paddingBottom: '15px' }}>
+                                Edit Cadet Record: {selectedViewCadet.name} (ID: {selectedViewCadet.cadetId})
+                            </h2>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                                {/* Block 1: Basic & Academic */}
-                                <div>
-                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Academic & College Details</h4>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Date of Birth</strong>: {selectedViewCadet.dob || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>College</strong>: {selectedViewCadet.college || 'DTU'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Course</strong>: {selectedViewCadet.course || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Branch</strong>: {selectedViewCadet.branch || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>College Roll No</strong>: {selectedViewCadet.collegeRollNo || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Cadet Year</strong>: Year {selectedViewCadet.year || 'N/A'} (Acad Year: {selectedViewCadet.academicYear || 'N/A'})</p>
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                try {
+                                    const res = await fetch(`/api/cadets/${selectedViewCadet._id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(selectedViewCadet)
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                        alert('Cadet record updated successfully!');
+                                        setSelectedViewCadet(null);
+                                        fetchAdminData();
+                                    } else {
+                                        alert(data.message || 'Failed to update cadet record');
+                                    }
+                                } catch (err) {
+                                    alert('Error saving updates.');
+                                }
+                            }}>
+                                {/* Grid with 2 columns of fieldsets */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginBottom: '25px' }}>
+                                    
+                                    {/* SECTION 1: Personal Details */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '15px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase' }}>1. Personal Information</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Cadet ID *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.cadetId || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, cadetId: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Full Name *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.name || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, name: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Date of Birth *</label>
+                                                <input type="date" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.dob || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, dob: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Email Address *</label>
+                                                <input type="email" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.email || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, email: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Rank *</label>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.rank || 'Cadet'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, rank: e.target.value })} required>
+                                                    <option value="Cadet">Cadet (Cdt)</option>
+                                                    <option value="L/Cpl">Lance Corporal (L/Cpl)</option>
+                                                    <option value="Cpl">Corporal (Cpl)</option>
+                                                    <option value="Sgt">Sergeant (Sgt)</option>
+                                                    <option value="CSM">Company Sergeant Major (CSM)</option>
+                                                    <option value="CQMS">Company Quartermaster Sergeant (CQMS)</option>
+                                                    <option value="JUO">Junior Under Officer (JUO)</option>
+                                                    <option value="SUO">Senior Under Officer (SUO)</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Wing *</label>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.wing || 'Army'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, wing: e.target.value })} required>
+                                                    <option value="Army">Army</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Contact Number *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.contact || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, contact: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Alternate Mobile</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.altContact || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, altContact: e.target.value })} />
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Residence Type *</label>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.residenceType || 'Hostel'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, residenceType: e.target.value })} required>
+                                                    <option value="Hostel">Hostel Resident</option>
+                                                    <option value="Day Scholar">Day Scholar</option>
+                                                    <option value="PG/Flat">PG/Flat</option>
+                                                </select>
+                                            </div>
+                                            {selectedViewCadet.residenceType === 'Hostel' && (
+                                                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                    <label className="form-label" style={{ fontSize: '0.72rem' }}>Hostel Number *</label>
+                                                    <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.hostelNo || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, hostelNo: e.target.value })} required />
+                                                </div>
+                                            )}
+                                            {selectedViewCadet.residenceType === 'PG/Flat' && (
+                                                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                    <label className="form-label" style={{ fontSize: '0.72rem' }}>PG/Flat Location *</label>
+                                                    <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.pgLocation || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, pgLocation: e.target.value })} required />
+                                                </div>
+                                            )}
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Full Address *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.address || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, address: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>City *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.city || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, city: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Pincode *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.pincode || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, pincode: e.target.value })} required />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 2: Academic Details */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '15px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase' }}>2. Academic Details</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>College Name *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.college || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, college: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Course *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.course || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, course: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Branch *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.branch || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, branch: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>College Roll No *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.collegeRollNo || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, collegeRollNo: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Regimental No *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.enrollmentNo || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, enrollmentNo: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Cadet Year *</label>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.year || '2'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, year: parseInt(e.target.value) })} required>
+                                                    <option value="2">2nd Year</option>
+                                                    <option value="3">3rd Year</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Academic Year *</label>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.academicYear || '1'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, academicYear: e.target.value })} required>
+                                                    <option value="1">1st Year</option>
+                                                    <option value="2">2nd Year</option>
+                                                    <option value="3">3rd Year</option>
+                                                    <option value="4">4th Year</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>DLI / Regt No *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.dliNo || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, dliNo: e.target.value })} required />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 3: Parents details */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '15px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase' }}>3. Parent/Guardian Information</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Father's Name *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.fatherName || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, fatherName: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Mother's Name *</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.motherName || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, motherName: e.target.value })} required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Guardian's Name</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.guardianName || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, guardianName: e.target.value })} />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* SECTION 4: Medical & Camps details */}
+                                    <fieldset style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '15px' }}>
+                                        <legend style={{ padding: '0 10px', color: 'var(--primary)', fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase' }}>4. Medical & Camps Details</legend>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Blood Group *</label>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.bloodGroup || 'O+'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, bloodGroup: e.target.value })} required>
+                                                    <option value="O+">O+</option>
+                                                    <option value="O-">O-</option>
+                                                    <option value="A+">A+</option>
+                                                    <option value="A-">A-</option>
+                                                    <option value="B+">B+</option>
+                                                    <option value="B-">B-</option>
+                                                    <option value="AB+">AB+</option>
+                                                    <option value="AB-">AB-</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Allergies</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.allergies || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, allergies: e.target.value })} />
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Medical Conditions</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.medicalConditions || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, medicalConditions: e.target.value })} />
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Regular Medications</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.medications || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, medications: e.target.value })} />
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Camps Attended</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.campsAttended || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, campsAttended: e.target.value })} />
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Other Details</label>
+                                                <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.otherDetails || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, otherDetails: e.target.value })} />
+                                            </div>
+                                        </div>
+                                    </fieldset>
                                 </div>
 
-                                {/* Block 2: Contacts */}
-                                <div>
-                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Contact Information</h4>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Mobile No</strong>: {selectedViewCadet.contact || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Alt Mobile</strong>: {selectedViewCadet.altContact || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Mail ID</strong>: {selectedViewCadet.email || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Address</strong>: {selectedViewCadet.address || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}>
-                                         <strong>City/Pincode</strong>: {selectedViewCadet.city || 'N/A'} - {selectedViewCadet.pincode || 'N/A'} ({selectedViewCadet.residenceType || 'N/A'})
-                                         {selectedViewCadet.residenceType === 'Hostel' && selectedViewCadet.hostelNo && ` | Hostel No: ${selectedViewCadet.hostelNo}`}
-                                         {selectedViewCadet.residenceType === 'PG/Flat' && selectedViewCadet.pgLocation && ` | PG Loc: ${selectedViewCadet.pgLocation}`}
-                                     </p>
+                                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                    {!selectedViewCadet.approved && (
+                                        <button 
+                                            type="button"
+                                            className="btn btn-primary" 
+                                            style={{ backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}
+                                            onClick={() => {
+                                                handleApproveCadet(selectedViewCadet._id);
+                                                setSelectedViewCadet(null);
+                                            }}
+                                        >
+                                            Approve Registration
+                                        </button>
+                                    )}
+                                    <button type="submit" className="btn btn-primary">Save Updates</button>
+                                    <button type="button" className="btn btn-outline" onClick={() => setSelectedViewCadet(null)}>Cancel</button>
                                 </div>
-
-                                {/* Block 3: Parents & Medical */}
-                                <div>
-                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Parent's Details</h4>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Father's Name</strong>: {selectedViewCadet.fatherName || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Mother's Name</strong>: {selectedViewCadet.motherName || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Guardian's Name</strong>: {selectedViewCadet.guardianName || 'N/A'}</p>
-                                </div>
-
-                                <div>
-                                    <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', fontWeight: '700' }}>Medical & Camps Details</h4>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Blood Group</strong>: <span style={{ color: 'var(--danger)', fontWeight: '700' }}>{selectedViewCadet.bloodGroup || 'N/A'}</span></p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Allergies</strong>: {selectedViewCadet.allergies || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Medical Conditions</strong>: {selectedViewCadet.medicalConditions || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Regular Medications</strong>: {selectedViewCadet.medications || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Camps Attended</strong>: {selectedViewCadet.campsAttended || 'N/A'}</p>
-                                </div>
-                            </div>
-                            
-                            <div style={{ marginTop: '30px', borderTop: '1px solid var(--border)', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                                {!selectedViewCadet.approved && (
-                                    <button 
-                                        className="btn btn-primary" 
-                                        style={{ backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}
-                                        onClick={() => {
-                                            handleApproveCadet(selectedViewCadet._id);
-                                            setSelectedViewCadet(null);
-                                        }}
-                                    >
-                                        Approve Registration
-                                    </button>
-                                )}
-                                <button className="btn btn-outline" onClick={() => setSelectedViewCadet(null)}>Close Profile</button>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 )}
