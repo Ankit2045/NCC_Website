@@ -92,7 +92,7 @@ router.post('/', async (req, res) => {
 // PUT update a cadet
 router.put('/:id', async (req, res) => {
     const {
-        name, enrollmentNo, squadron, rank, wing, year, contact, email, dob,
+        cadetId, name, enrollmentNo, squadron, rank, wing, year, contact, email, dob,
         college, dliNo, bloodGroup, course, branch, collegeRollNo, academicYear,
         altContact, address, residenceType, pgLocation, hostelNo, city, pincode, fatherName, motherName,
         guardianName, allergies, medicalConditions, medications, campsAttended, otherDetails
@@ -104,6 +104,7 @@ router.put('/:id', async (req, res) => {
 
         const oldEmail = cadet.email;
 
+        if (cadetId) cadet.cadetId = cadetId;
         cadet.name = name;
         cadet.enrollmentNo = enrollmentNo;
         cadet.squadron = squadron;

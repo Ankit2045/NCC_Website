@@ -29,7 +29,7 @@ const seedDB = async () => {
 
         // 1. Seed Cadet Profiles for SUO, CSM, CQMS, JUO
         const suoCadet = new Cadet({
-            cadetId: "C001",
+            cadetId: "C002",
             name: "SUO Piyush Kumar",
             enrollmentNo: "DEL/SD/24/4801",
             squadron: "hq",
@@ -47,7 +47,7 @@ const seedDB = async () => {
         await suoCadet.save();
 
         const csmCadet = new Cadet({
-            cadetId: "C002",
+            cadetId: "C004",
             name: "CSM Akshat Tiwari",
             enrollmentNo: "DEL/SD/24/4802",
             squadron: "hq",
@@ -65,7 +65,7 @@ const seedDB = async () => {
         await csmCadet.save();
 
         const cqmsCadet = new Cadet({
-            cadetId: "C003",
+            cadetId: "C001",
             name: "CQMS Ankit Singh",
             enrollmentNo: "DEL/SD/24/4803",
             squadron: "hq",
@@ -83,7 +83,7 @@ const seedDB = async () => {
         await cqmsCadet.save();
 
         const juoCadet = new Cadet({
-            cadetId: "C004",
+            cadetId: "C003",
             name: "JUO Ankit Kumar",
             enrollmentNo: "DEL/SD/24/4804",
             squadron: "hq",

@@ -126,6 +126,7 @@ function AppContent() {
 
     // Admin Forms State
     const [editingCadetId, setEditingCadetId] = useState(null);
+    const [cadetIdVal, setCadetIdVal] = useState('');
     const [cadetName, setCadetName] = useState('');
     const [cadetEnrollment, setCadetEnrollment] = useState('');
     const [cadetSquadron, setCadetSquadron] = useState('alpha');
@@ -682,6 +683,7 @@ function AppContent() {
         e.preventDefault();
         setAdminCadetMsg('');
         const payload = {
+            cadetId: cadetIdVal,
             name: cadetName,
             enrollmentNo: cadetEnrollment,
             squadron: cadetSquadron,
@@ -716,6 +718,7 @@ function AppContent() {
             if (res.ok) {
                 setAdminCadetMsg(editingCadetId ? 'Cadet record updated successfully!' : `Successfully enrolled cadet ${cadetName}!`);
                 setEditingCadetId(null);
+                setCadetIdVal('');
                 setCadetName('');
                 setCadetEnrollment('');
                 setCadetContact('');
@@ -735,6 +738,7 @@ function AppContent() {
 
     const handleEditClick = (c) => {
         setEditingCadetId(c._id);
+        setCadetIdVal(c.cadetId || '');
         setCadetName(c.name);
         setCadetEnrollment(c.enrollmentNo);
         setCadetSquadron(c.squadron);
@@ -2809,6 +2813,10 @@ function AppContent() {
                                                     <form onSubmit={handleCadetSubmit}>
                                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                                                             <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Cadet ID *</label>
+                                                                <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetIdVal} onChange={(e) => setCadetIdVal(e.target.value)} required />
+                                                            </div>
+                                                            <div className="form-group">
                                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Name *</label>
                                                                 <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetName} onChange={(e) => setCadetName(e.target.value)} required />
                                                             </div>
@@ -2889,7 +2897,7 @@ function AppContent() {
                                                             <button type="submit" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
                                                                 <i className="fa-solid fa-floppy-disk"></i> Save Updates
                                                             </button>
-                                                            <button type="button" className="btn btn-outline" onClick={() => { setEditingCadetId(null); setCadetName(''); setCadetEnrollment(''); setCadetContact(''); setCadetEmail(''); setCadetDob(''); setCadetResidenceType('Hostel'); setCadetHostelNo(''); setCadetPgLocation(''); }} style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
+                                                            <button type="button" className="btn btn-outline" onClick={() => { setEditingCadetId(null); setCadetIdVal(''); setCadetName(''); setCadetEnrollment(''); setCadetContact(''); setCadetEmail(''); setCadetDob(''); setCadetResidenceType('Hostel'); setCadetHostelNo(''); setCadetPgLocation(''); }} style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
                                                                 Cancel
                                                             </button>
                                                         </div>
