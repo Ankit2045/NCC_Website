@@ -1283,7 +1283,7 @@ function AppContent() {
                                 <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
                                     <img src="gallery/dg_virendra_vats.jpg" alt="Lt Gen Virendra Vats" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
                                     <span className="badge badge-warning" style={{ backgroundColor: 'var(--saffron)', color: '#fff', fontSize: '0.72rem', padding: '4px 8px' }}>Director General (DG)</span>
-                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Lt Gen Virendra Vats, SM, VSM</h4>
+                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Lt Gen Virendra Vats, YSM, SM, VSM</h4>
                                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>DG NCC Headquarters, New Delhi</p>
                                 </div>
                                 
@@ -1296,9 +1296,9 @@ function AppContent() {
 
                                 <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
                                     <img src="gallery/ddg_avatar.jpg" alt="Brig PS Chonkar" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
-                                    <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '4px 8px' }}>Group Commander</span>
-                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Brig PS Chonkar</h4>
-                                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>Group Commander, Delhi Group 'B'</p>
+                                    <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '4px 8px' }}>Deputy Director General (DDG)</span>
+                                    <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Brig PS Chonkar, SM, VSM</h4>
+                                    <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>DDG Delhi Directorate</p>
                                 </div>
 
                                 <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
@@ -1586,7 +1586,7 @@ function AppContent() {
 
                                 <div className="profile-card" style={{ padding: '25px', textAlign: 'left', alignSelf: 'start' }}>
                                     <h3 style={{ color: 'var(--primary)', marginBottom: '15px' }}><i className="fa-solid fa-building-shield"></i> ANO Office</h3>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Associate NCC Officer (ANO)</strong>: Lt. Dr. Raghveder Gautam</p>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Associate NCC Officer (ANO)</strong>: Lt. (Dr.) Raghvender Gautam</p>
                                     <p style={{ fontSize: '0.9rem', marginBottom: '10px' }}><strong>Office Location</strong>: 3rd floor civil department, DTU</p>
                                     <p style={{ fontSize: '0.9rem', marginBottom: '20px' }}><strong>Training Schedule</strong>: Every Saturday (0800 hrs to 1300 hrs)</p>
                                     
@@ -2151,8 +2151,8 @@ function AppContent() {
                                             Patron & Unit Command
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
-                                            {renderProfileCard("Prof. Prateek Sharma", "Colonel Commandant", "var(--primary)", "var(--primary)", "gallery/vc_prateek.png")}
-                                            {renderProfileCard("Lt. Dr. Raghveder Gautam", "Associate NCC Officer", "var(--saffron)", "var(--saffron)", "gallery/ano_raghvender.jpg")}
+                                            {renderProfileCard("Colonel (Prof) Prateek Sharma", "Colonel Commandant", "var(--primary)", "var(--primary)", "gallery/vc_prateek.png")}
+                                            {renderProfileCard("Lt. (Dr.) Raghvender Gautam", "Associate NCC Officer", "var(--saffron)", "var(--saffron)", "gallery/ano_raghvender.jpg")}
                                         </div>
                                     </div>
 
@@ -2218,7 +2218,7 @@ function AppContent() {
                                                 { name: "Shivam Pandey", img: null },
                                                 { name: "M. Vishnu", img: null },
                                                 { name: "Ritik Thakur", img: null },
-                                                { name: "Nishant Tiwari", img: null },
+                                                { name: "Nishant Tiwari", img: "gallery/sgt_nishant.png" },
                                                 { name: "Mayank Rohilla (PT)", img: null },
                                                 { name: "Pratik (Media)", img: "gallery/sgt_pratik.png" }
                                             ].map((sgt, idx) => (
