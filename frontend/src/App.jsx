@@ -1975,195 +1975,151 @@ function AppContent() {
                 )}
 
                 {/* Rank Panel Tab View */}
-                {currentTab === 'rankpanel' && (
-                    <div className="view-section active">
-                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
-                            <div className="section-header">
-                                <h2>Command Leadership Rank Panel (2026-27)</h2>
-                                <p>Hierarchy, NCO commands, and cadet leadership chain of 1 DBN NCC Unit, DTU</p>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '35px', maxWidth: '1000px', margin: '0 auto' }}>
-                                
-                                {/* 1. Patron & Supreme Command (VC & ANO) */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-                                    {/* VC Card */}
-                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--primary)' }}>
-                                        <div style={{ width: '90px', height: '110px', minWidth: '90px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <i className="fa-solid fa-graduation-cap" style={{ fontSize: '2rem', color: 'var(--primary)' }}></i>
-                                        </div>
-                                        <div style={{ textAlign: 'left' }}>
-                                            <span className="badge badge-primary" style={{ backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.65rem' }}>Honorary Colonel</span>
-                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Prof. Prateek Sharma</h3>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Vice Chancellor, DTU (Patron)</p>
-                                        </div>
-                                    </div>
-
-                                    {/* ANO Card */}
-                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--saffron)' }}>
-                                        <img src="gallery/ano_raghvender.jpg" alt="Lt. Dr. Raghveder Gautam" style={{ width: '90px', height: '110px', minWidth: '90px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
-                                        <div style={{ textAlign: 'left' }}>
-                                            <span className="badge badge-warning" style={{ backgroundColor: 'var(--saffron)', color: '#fff', fontSize: '0.65rem' }}>Associate NCC Officer</span>
-                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Lt. Dr. Raghveder Gautam</h3>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Unit Commander & Officer in Charge</p>
-                                        </div>
-                                    </div>
+                {currentTab === 'rankpanel' && (() => {
+                    const renderProfileCard = (name, rankLabel, badgeColor, borderLeftColor, imgUrl) => (
+                        <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: `5px solid ${borderLeftColor}`, minHeight: '165px', backgroundColor: '#fff', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
+                            {imgUrl === 'icon-vc' ? (
+                                <div style={{ width: '100px', height: '125px', minWidth: '100px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                    <i className="fa-solid fa-graduation-cap" style={{ fontSize: '2.5rem', color: 'var(--primary)' }}></i>
                                 </div>
-
-                                {/* 2. Command Command (SUO & JUO 2IC) */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-                                    {/* SUO Card */}
-                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--army-red)' }}>
-                                        <img src="gallery/suo_piyush.jpg" alt="SUO Piyush Kumar" style={{ width: '90px', height: '110px', minWidth: '90px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
-                                        <div style={{ textAlign: 'left' }}>
-                                            <span className="badge badge-danger" style={{ backgroundColor: 'var(--army-red)', color: '#fff', fontSize: '0.65rem' }}>Senior Under Officer (SUO)</span>
-                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Piyush Kumar</h3>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Cadet Commander</p>
-                                        </div>
-                                    </div>
-
-                                    {/* JUO 2IC Card (Ankit Kumar) */}
-                                    <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', borderLeft: '5px solid var(--secondary)' }}>
-                                        <img src="gallery/juo_ankit.jpg" alt="JUO Ankit Kumar" style={{ width: '90px', height: '110px', minWidth: '90px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
-                                        <div style={{ textAlign: 'left' }}>
-                                            <span className="badge" style={{ backgroundColor: 'var(--secondary)', color: '#fff', fontSize: '0.65rem' }}>JUO - Second in Command (2IC)</span>
-                                            <h3 style={{ margin: '5px 0 2px 0', fontSize: '1.15rem', fontWeight: '700' }}>Ankit Kumar</h3>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Junior Under Officer & 2IC</p>
-                                        </div>
-                                    </div>
+                            ) : imgUrl ? (
+                                <img src={imgUrl} alt={name} style={{ width: '100px', height: '125px', minWidth: '100px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+                            ) : (
+                                <div style={{ width: '100px', height: '125px', minWidth: '100px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                    <i className="fa-solid fa-user" style={{ fontSize: '1.8rem', color: 'var(--text-muted)' }}></i>
+                                    <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '4px' }}>Photo</span>
                                 </div>
-
-                                {/* 3. Junior Under Officers (JUOs) */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
-                                        Junior Under Officers (JUO)
-                                    </h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
-                                        {[
-                                            { name: "Abhinav Kumar", img: "gallery/juo_abhinav.png" },
-                                            { name: "Adamya Naorem", img: "gallery/juo_adamya.png" },
-                                            { name: "Samarth Kadyan", img: "gallery/juo_samarth.png" }
-                                        ].map((juo, idx) => (
-                                            <div key={idx} className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--primary)' }}>
-                                                {juo.img ? (
-                                                    <img src={juo.img} alt={juo.name} style={{ width: '60px', height: '75px', minWidth: '60px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
-                                                ) : (
-                                                    <div style={{ width: '60px', height: '75px', minWidth: '60px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <i className="fa-solid fa-user" style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}></i>
-                                                        <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
-                                                    </div>
-                                                )}
-                                                <div style={{ textAlign: 'left' }}>
-                                                    <div style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: '700' }}>Junior Under Officer</div>
-                                                    <h4 style={{ margin: '2px 0 0 0', fontSize: '0.88rem', fontWeight: '700' }}>{juo.name}</h4>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* 4. CSM */}
-                                <div style={{ marginBottom: '25px' }}>
-                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
-                                        Company Sergeant Major (CSM)
-                                    </h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
-                                        {[
-                                            { name: "Akshat Tiwari", img: null },
-                                            { name: "Shreyansh Gupta", img: "gallery/csm_shreyansh.jpg" }
-                                        ].map((csm, idx) => (
-                                            <div key={idx} className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
-                                                {csm.img ? (
-                                                    <img src={csm.img} alt={csm.name} style={{ width: '60px', height: '75px', minWidth: '60px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
-                                                ) : (
-                                                    <div style={{ width: '60px', height: '75px', minWidth: '60px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)', backgroundColor: '#fcfcfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <i className="fa-solid fa-user" style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}></i>
-                                                        <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '2px' }}>Photo</span>
-                                                    </div>
-                                                )}
-                                                <div style={{ textAlign: 'left' }}>
-                                                    <div style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: '700' }}>Company Sergeant Major</div>
-                                                    <h4 style={{ margin: '2px 0 0 0', fontSize: '0.88rem', fontWeight: '700' }}>{csm.name}</h4>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* 5. CQMS */}
-                                <div style={{ marginBottom: '25px' }}>
-                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
-                                        Company Quartermaster Sergeant (CQMS)
-                                    </h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
-                                        <div className="profile-card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderLeft: '3px solid var(--secondary)' }}>
-                                            <img src="gallery/cqms_ankit.png" alt="CQMS Ankit Singh" style={{ width: '60px', height: '75px', minWidth: '60px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
-                                            <div style={{ textAlign: 'left' }}>
-                                                <div style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: '700' }}>CQMS</div>
-                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.88rem', fontWeight: '700' }}>Ankit Singh</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* 6. Sergeants (Sgt) */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
-                                        Sergeants (Sgt)
-                                    </h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
-                                        {[
-                                            "Shivam Pandey", "M. Vishnu", "Ritik Thakur",
-                                            "Nishant Tiwari", "Mayank Rohilla (PT)", "Pratik (Media)"
-                                        ].map((name, idx) => (
-                                            <div key={idx} className="profile-card" style={{ padding: '10px', textAlign: 'center', backgroundColor: '#fcfcfc' }}>
-                                                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Sergeant</div>
-                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.78rem', fontWeight: '700' }}>{name}</h4>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* 7. Corporals (Cpl) */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
-                                        Corporals (Cpl)
-                                    </h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
-                                        {[
-                                            "Adarsh", "Nikhil Kumar", "Yash Lohchab",
-                                            "Vishal Singh", "Nikhil Rai"
-                                        ].map((name, idx) => (
-                                            <div key={idx} className="profile-card" style={{ padding: '10px', textAlign: 'center', backgroundColor: '#fcfcfc' }}>
-                                                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Corporal</div>
-                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.78rem', fontWeight: '700' }}>{name}</h4>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* 8. Lance Corporals (L/CPL) */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
-                                        Lance Corporals (L/CPL)
-                                    </h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
-                                        {[
-                                            "Ujjwal Jha", "Suraj Kumar", "Kartik", "Kundan Kumar",
-                                            "Ankur Debsharma", "Nikhil Kumar", "Shrish Chand", "Krishna Yadav"
-                                        ].map((name, idx) => (
-                                            <div key={idx} className="profile-card" style={{ padding: '10px', textAlign: 'center', backgroundColor: '#fcfcfc' }}>
-                                                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Lance Corporal</div>
-                                                <h4 style={{ margin: '2px 0 0 0', fontSize: '0.78rem', fontWeight: '700' }}>{name}</h4>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
+                            )}
+                            <div style={{ textAlign: 'left' }}>
+                                <span className="badge" style={{ backgroundColor: badgeColor, color: '#fff', fontSize: '0.65rem', padding: '4px 8px', borderRadius: '4px' }}>{rankLabel}</span>
+                                <h3 style={{ margin: '8px 0 2px 0', fontSize: '1.15rem', fontWeight: '700', color: 'var(--navy-blue)' }}>{name}</h3>
                             </div>
                         </div>
-                    </div>
-                )}                {/* 7. Cadet / Admin Portal View */}
+                    );
+
+                    return (
+                        <div className="view-section active">
+                            <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                                <div className="section-header">
+                                    <h2>Command Leadership Rank Panel (2026-27)</h2>
+                                    <p>Hierarchy, NCO commands, and cadet leadership chain of 1 DBN NCC Unit, DTU</p>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '35px', maxWidth: '1000px', margin: '0 auto' }}>
+                                    
+                                    {/* 1. Patron & Unit Command */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Patron & Unit Command
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                                            {renderProfileCard("Prof. Prateek Sharma", "Honorary Colonel", "var(--primary)", "var(--primary)", "icon-vc")}
+                                            {renderProfileCard("Lt. Dr. Raghveder Gautam", "Associate NCC Officer", "var(--saffron)", "var(--saffron)", "gallery/ano_raghvender.jpg")}
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Second in Command (2IC) & Senior Command */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Senior Command
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                                            {renderProfileCard("Piyush Kumar", "Senior Under Officer", "var(--army-red)", "var(--army-red)", "gallery/suo_piyush.jpg")}
+                                            {renderProfileCard("Ankit Kumar", "JUO - Second in Command (2IC)", "var(--secondary)", "var(--secondary)", "gallery/juo_ankit.jpg")}
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Junior Under Officers (JUO) */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Junior Under Officers (JUO)
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                                            {[
+                                                { name: "Abhinav Kumar", img: "gallery/juo_abhinav.png" },
+                                                { name: "Adamya Naorem", img: "gallery/juo_adamya.png" },
+                                                { name: "Samarth Kadyan", img: "gallery/juo_samarth.png" }
+                                            ].map((juo, idx) => (
+                                                <span key={idx}>{renderProfileCard(juo.name, "Junior Under Officer", "var(--primary)", "var(--primary)", juo.img)}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 4. CSM */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Company Sergeant Major (CSM)
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                                            {[
+                                                { name: "Akshat Tiwari", img: null },
+                                                { name: "Shreyansh Gupta", img: "gallery/csm_shreyansh.jpg" }
+                                            ].map((csm, idx) => (
+                                                <span key={idx}>{renderProfileCard(csm.name, "Company Sergeant Major", "var(--secondary)", "var(--secondary)", csm.img)}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 5. CQMS */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Company Quartermaster Sergeant (CQMS)
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 350px))', gap: '20px' }}>
+                                            {renderProfileCard("Ankit Singh", "CQMS", "var(--secondary)", "var(--secondary)", "gallery/cqms_ankit.png")}
+                                        </div>
+                                    </div>
+
+                                    {/* 6. Sergeants (Sgt) */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Sergeants (Sgt)
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                                            {[
+                                                "Shivam Pandey", "M. Vishnu", "Ritik Thakur",
+                                                "Nishant Tiwari", "Mayank Rohilla (PT)", "Pratik (Media)"
+                                            ].map((name, idx) => (
+                                                <span key={idx}>{renderProfileCard(name, "Sergeant", "var(--text-muted)", "var(--text-muted)", null)}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 7. Corporals (Cpl) */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Corporals (Cpl)
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                                            {[
+                                                "Adarsh", "Nikhil Kumar", "Yash Lohchab",
+                                                "Vishal Singh", "Nikhil Rai"
+                                            ].map((name, idx) => (
+                                                <span key={idx}>{renderProfileCard(name, "Corporal", "var(--text-muted)", "var(--text-muted)", null)}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 8. Lance Corporals (L/CPL) */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', textTransform: 'uppercase', color: 'var(--primary)', borderBottom: '2px solid var(--border)', paddingBottom: '8px', marginBottom: '15px', textAlign: 'left', fontWeight: '700' }}>
+                                            Lance Corporals (L/CPL)
+                                        </h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
+                                            {[
+                                                "Ujjwal Jha", "Suraj Kumar", "Kartik", "Kundan Kumar",
+                                                "Ankur Debsharma", "Nikhil Kumar", "Shrish Chand", "Krishna Yadav"
+                                            ].map((name, idx) => (
+                                                <span key={idx}>{renderProfileCard(name, "Lance Corporal", "var(--text-muted)", "var(--text-muted)", null)}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}                {/* 7. Cadet / Admin Portal View */}
                 {currentTab === 'dashboard' && user && (
                     <div className="view-section active">
                         {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? (
