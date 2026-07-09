@@ -4206,6 +4206,16 @@ function AppContent() {
                                                 </select>
                                             </div>
                                             <div className="form-group">
+                                                <label className="form-label" style={{ fontSize: '0.72rem' }}>Squadron *</label>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.squadron || 'alpha'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, squadron: e.target.value })} required>
+                                                    <option value="hq">HQ</option>
+                                                    <option value="alpha">Alpha</option>
+                                                    <option value="bravo">Bravo</option>
+                                                    <option value="charlie">Charlie</option>
+                                                    <option value="delta">Delta</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
                                                 <label className="form-label" style={{ fontSize: '0.72rem' }}>Contact Number *</label>
                                                 <input type="text" className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.contact || ''} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, contact: e.target.value })} required />
                                             </div>
