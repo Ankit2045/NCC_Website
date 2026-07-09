@@ -1295,7 +1295,7 @@ function AppContent() {
                                 </div>
 
                                 <div className="card officer-card" style={{ padding: '20px', textAlign: 'center', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
-                                    <img src="gallery/ddg_avatar.jpg" alt="Brig PS Chonkar" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
+                                    <img src="gallery/ddg_chonkar.jpg" alt="Brig PS Chonkar" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '15px' }} />
                                     <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '4px 8px' }}>Deputy Director General (DDG)</span>
                                     <h4 style={{ margin: '10px 0 4px 0', fontSize: '1rem', fontWeight: '700' }}>Brig PS Chonkar, SM, VSM</h4>
                                     <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>DDG Delhi Directorate</p>
