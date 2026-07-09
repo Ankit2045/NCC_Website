@@ -346,8 +346,15 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'A cadet account with this email already exists.' });
         }
 
-        const count = await Cadet.countDocuments({});
-        const cadetId = "C" + String(count + 1).padStart(3, '0');
+        const lastCadet = await Cadet.findOne({ cadetId: { $regex: /^C\d+$/ } }).sort({ cadetId: -1 });
+        let nextNum = 1;
+        if (lastCadet && lastCadet.cadetId) {
+            const numPart = parseInt(lastCadet.cadetId.replace('C', ''), 10);
+            if (!isNaN(numPart)) {
+                nextNum = numPart + 1;
+            }
+        }
+        const cadetId = "C" + String(nextNum).padStart(3, '0');
 
         const cadet = new Cadet({
             cadetId,
