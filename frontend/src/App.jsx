@@ -4733,12 +4733,12 @@ function AppContent() {
                                                     <i className="fa-solid fa-list-check"></i> Squadron Registrations Status
                                                 </h4>
                                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px' }}>
-                                                    {['hq', 'alpha', 'bravo', 'charlie', 'delta'].map(sq => {
+                                                    {['alpha', 'bravo', 'charlie', 'delta'].map(sq => {
                                                         const reg = comp.registrations.find(r => r.squadron === sq);
                                                         return (
-                                                            <div key={sq} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '12px', backgroundColor: reg ? '#f0fdf4' : '#fafafa', borderLeft: `4px solid ${reg ? 'var(--success)' : 'var(--border)'}` }}>
+                                                            <div key={sq} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '12px', backgroundColor: reg ? '#f0fdf4' : '#fafafa', borderLeft: reg ? '4px solid var(--success)' : '4px solid var(--border)' }}>
                                                                 <h5 style={{ margin: '0 0 8px 0', textTransform: 'uppercase', fontSize: '0.82rem', fontWeight: '800', color: reg ? 'var(--success)' : 'var(--text-muted)' }}>
-                                                                    {sq === 'hq' ? 'Headquarters' : sq.toUpperCase()}
+                                                                    {sq.toUpperCase()}
                                                                 </h5>
                                                                 {reg ? (
                                                                     <div>
