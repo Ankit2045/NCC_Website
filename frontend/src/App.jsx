@@ -2013,7 +2013,7 @@ function AppContent() {
                                             Patron & Unit Command
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
-                                            {renderProfileCard("Prof. Prateek Sharma", "Honorary Colonel", "var(--primary)", "var(--primary)", "icon-vc")}
+                                            {renderProfileCard("Prof. Prateek Sharma", "Colonel Commandant", "var(--primary)", "var(--primary)", "gallery/vc_prateek.png")}
                                             {renderProfileCard("Lt. Dr. Raghveder Gautam", "Associate NCC Officer", "var(--saffron)", "var(--saffron)", "gallery/ano_raghvender.jpg")}
                                         </div>
                                     </div>
