@@ -59,4 +59,65 @@ router.post('/', async (req, res) => {
     }
 });
 
+// POST mark/sync bulk attendance
+router.post('/bulk', async (req, res) => {
+    const { date, attendanceSheet, markedBy } = req.body;
+
+    try {
+        const results = [];
+        for (const item of attendanceSheet) {
+            const { cadetId, status } = item;
+            let record = await Attendance.findOne({ date, cadetId });
+
+            if (record) {
+                record.status = status;
+                record.markedBy = markedBy;
+                await record.save();
+            } else {
+                record = new Attendance({
+                    date,
+                    cadetId,
+                    status,
+                    markedBy
+                });
+                await record.save();
+            }
+
+            // Sync fines:
+            if (status === 'Absent') {
+                const fineExists = await Fine.findOne({ cadetId, attendanceRecordId: record._id });
+                if (!fineExists) {
+                    const fine = new Fine({
+                        cadetId,
+                        attendanceRecordId: record._id,
+                        amount: 50,
+                        status: 'Unpaid',
+                        dateCreated: date
+                    });
+                    await fine.save();
+                }
+            } else {
+                // If cadet is present or excused, clear any unpaid fine for this specific date and cadet
+                await Fine.findOneAndDelete({ cadetId, dateCreated: date, status: 'Unpaid' });
+            }
+            results.push(record);
+        }
+        res.json({ message: 'Bulk attendance recorded successfully!', count: results.length });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// DELETE attendance for a date
+router.delete('/date/:date', async (req, res) => {
+    const { date } = req.params;
+    try {
+        await Attendance.deleteMany({ date });
+        await Fine.deleteMany({ dateCreated: date, status: 'Unpaid' });
+        res.json({ message: `Parade attendance for ${date} removed successfully.` });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

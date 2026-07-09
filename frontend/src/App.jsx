@@ -13,6 +13,9 @@ function AppContent() {
     const [attendance, setAttendance] = useState([]);
     const [fines, setFines] = useState([]);
     const [competitionPlacements, setCompetitionPlacements] = useState([]);
+    const [paradeDate, setParadeDate] = useState(new Date().toISOString().split('T')[0]);
+    const [attendanceSquadronFilter, setAttendanceSquadronFilter] = useState('all');
+    const [localAttendanceSheet, setLocalAttendanceSheet] = useState({});
     const [selectedViewCadet, setSelectedViewCadet] = useState(null);
     const [squadronFilter, setSquadronFilter] = useState('all');
     const [showSquadronGroupTables, setShowSquadronGroupTables] = useState(false);
@@ -254,6 +257,12 @@ function AppContent() {
             }
         }
     }, [user, cadet]);
+
+    useEffect(() => {
+        if (user && ['admin', 'ano', 'suo', 'cqms'].includes(user.role) && cadets.length > 0) {
+            loadAttendanceSheetForDate(paradeDate);
+        }
+    }, [paradeDate, cadets, exemptions, attendance, user]);
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -821,6 +830,282 @@ function AppContent() {
         }
     };
 
+    const loadAttendanceSheetForDate = (date) => {
+        const existingRecords = attendance.filter(a => a.date === date);
+        const newSheet = {};
+        cadets.filter(c => c.approved).forEach(c => {
+            const existing = existingRecords.find(r => r.cadetId === c.cadetId);
+            if (existing) {
+                newSheet[c.cadetId] = existing.status;
+            } else {
+                const hasLeave = exemptions.some(e => e.cadetId === c.cadetId && e.date === date && e.status === 'Approved');
+                if (hasLeave) {
+                    newSheet[c.cadetId] = 'Excused';
+                } else {
+                    newSheet[c.cadetId] = 'Present';
+                }
+            }
+        });
+        setLocalAttendanceSheet(newSheet);
+    };
+
+    const getEstimatedDeductions = () => {
+        let deductions = 0;
+        const filteredCadets = cadets.filter(c => c.approved);
+            
+        filteredCadets.forEach(c => {
+            const status = localAttendanceSheet[c.cadetId] || 'Present';
+            if (status === 'Absent') {
+                if (c.year === 3) deductions += 0.20;
+                else if (c.year === 2) deductions += 0.25;
+            }
+        });
+        return parseFloat(deductions.toFixed(2));
+    };
+
+    const handleMarkAllPresent = () => {
+        const updated = { ...localAttendanceSheet };
+        cadets.filter(c => c.approved).forEach(c => {
+            const hasLeave = exemptions.some(e => e.cadetId === c.cadetId && e.date === paradeDate && e.status === 'Approved');
+            if (!hasLeave) {
+                updated[c.cadetId] = 'Present';
+            }
+        });
+        setLocalAttendanceSheet(updated);
+    };
+
+    const handleMarkAllAbsent = () => {
+        const updated = { ...localAttendanceSheet };
+        cadets.filter(c => c.approved).forEach(c => {
+            const hasLeave = exemptions.some(e => e.cadetId === c.cadetId && e.date === paradeDate && e.status === 'Approved');
+            if (!hasLeave) {
+                updated[c.cadetId] = 'Absent';
+            }
+        });
+        setLocalAttendanceSheet(updated);
+    };
+
+    const handleExportToCSV = () => {
+        const headers = ['S.No', 'Cadet ID', 'Regt No', 'Rank', 'Name', 'Squadron', 'Year', 'Status', 'Exemption Status'];
+        const getSqnOrder = (sqn) => {
+            const order = { 'hq': 1, 'alpha': 2, 'bravo': 3, 'charlie': 4, 'delta': 5 };
+            return order[sqn.toLowerCase()] || 99;
+        };
+        const filteredCadets = [...cadets]
+            .filter(c => c.approved)
+            .sort((a, b) => {
+                const sqnA = getSqnOrder(a.squadron);
+                const sqnB = getSqnOrder(b.squadron);
+                if (sqnA !== sqnB) return sqnA - sqnB;
+                
+                const yearA = Number(a.year) || 1;
+                const yearB = Number(b.year) || 1;
+                if (yearA !== yearB) return yearB - yearA;
+                
+                return a.name.localeCompare(b.name);
+            });
+            
+        const rows = filteredCadets.map((c, index) => {
+            const hasLeave = exemptions.find(e => e.cadetId === c.cadetId && e.date === paradeDate && e.status === 'Approved');
+            const status = localAttendanceSheet[c.cadetId] || 'Present';
+            const leaveStatus = hasLeave ? 'Excused (Leave Approved)' : '';
+            return [
+                index + 1,
+                c.cadetId,
+                c.enrollmentNo || '',
+                c.rank,
+                c.name,
+                c.squadron.toUpperCase(),
+                c.year + ' Year',
+                status,
+                leaveStatus
+            ];
+        });
+        
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + [headers.join(','), ...rows.map(e => e.map(val => '"' + val + '"').join(','))].join('\n');
+            
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", 'Parade_Attendance_' + paradeDate + '_' + attendanceSquadronFilter + '.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleSubmitAttendanceSheet = async () => {
+        const sheet = [];
+        Object.entries(localAttendanceSheet).forEach(([cadetId, status]) => {
+            sheet.push({ cadetId, status });
+        });
+        
+        try {
+            const res = await fetch('/api/attendance/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: paradeDate,
+                    attendanceSheet: sheet,
+                    markedBy: user.role.toUpperCase() + ' (Bulk Attendance)'
+                })
+            });
+            
+            if (res.ok) {
+                alert('Parade attendance sheet submitted successfully!');
+                fetchPublicData();
+                fetchAdminData();
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Failed to submit attendance sheet');
+            }
+        } catch (err) {
+            console.error('Error submitting bulk attendance:', err);
+            alert('Server error submitting attendance sheet.');
+        }
+    };
+
+    const handleDeleteParadeAttendance = async (date) => {
+        if (!window.confirm('Are you sure you want to delete all parade attendance records for ' + date + '? This will also delete any unpaid absence fines logged on this date.')) return;
+        try {
+            const res = await fetch('/api/attendance/date/' + date, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                alert('Parade attendance for ' + date + ' deleted successfully!');
+                fetchPublicData();
+                fetchAdminData();
+            } else {
+                alert('Failed to delete parade attendance records.');
+            }
+        } catch (err) {
+            console.error('Error deleting parade attendance:', err);
+            alert('Server error deleting parade attendance.');
+        }
+    };
+
+    const handleExportDateToCSV = (date) => {
+        const headers = ['S.No', 'Cadet ID', 'Regt No', 'Rank', 'Name', 'Squadron', 'Year', 'Status', 'Marked By'];
+        const dateRecords = attendance.filter(a => a.date === date);
+        const getSqnOrder = (sqn) => {
+            const order = { 'hq': 1, 'alpha': 2, 'bravo': 3, 'charlie': 4, 'delta': 5 };
+            return order[sqn.toLowerCase()] || 99;
+        };
+        const rows = [];
+        let sNo = 1;
+        const sortedCadets = [...cadets]
+            .filter(c => c.approved)
+            .sort((a, b) => {
+                const sqnA = getSqnOrder(a.squadron);
+                const sqnB = getSqnOrder(b.squadron);
+                if (sqnA !== sqnB) return sqnA - sqnB;
+                
+                const yearA = Number(a.year) || 1;
+                const yearB = Number(b.year) || 1;
+                if (yearA !== yearB) return yearB - yearA;
+                
+                return a.name.localeCompare(b.name);
+            });
+            
+        sortedCadets.forEach(c => {
+            const rec = dateRecords.find(r => r.cadetId === c.cadetId);
+            if (rec) {
+                rows.push([
+                    sNo++,
+                    c.cadetId,
+                    c.enrollmentNo || '',
+                    c.rank,
+                    c.name,
+                    c.squadron.toUpperCase(),
+                    c.year + ' Year',
+                    rec.status,
+                    rec.markedBy || ''
+                ]);
+            }
+        });
+        
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + [headers.join(','), ...rows.map(e => e.map(val => '"' + val + '"').join(','))].join('\n');
+            
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", 'Parade_Attendance_' + date + '.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleExportAllParadesToCSV = () => {
+        const uniqueDates = [];
+        attendance.forEach(a => {
+            if (!uniqueDates.includes(a.date)) {
+                uniqueDates.push(a.date);
+            }
+        });
+        uniqueDates.sort((a, b) => new Date(a) - new Date(b));
+        
+        const headers = ['S.No', 'Cadet ID', 'Regt No', 'Rank', 'Name', 'Squadron', 'Year', ...uniqueDates, 'Total Parades', 'Presents', 'Percentage'];
+        const getSqnOrder = (sqn) => {
+            const order = { 'hq': 1, 'alpha': 2, 'bravo': 3, 'charlie': 4, 'delta': 5 };
+            return order[sqn.toLowerCase()] || 99;
+        };
+        
+        const sortedCadets = [...cadets]
+            .filter(c => c.approved)
+            .sort((a, b) => {
+                const sqnA = getSqnOrder(a.squadron);
+                const sqnB = getSqnOrder(b.squadron);
+                if (sqnA !== sqnB) return sqnA - sqnB;
+                
+                const yearA = Number(a.year) || 1;
+                const yearB = Number(b.year) || 1;
+                if (yearA !== yearB) return yearB - yearA;
+                
+                return a.name.localeCompare(b.name);
+            });
+            
+        const rows = sortedCadets.map((c, index) => {
+            let presents = 0;
+            let totalHeld = 0;
+            const dateStatuses = uniqueDates.map(date => {
+                const rec = attendance.find(r => r.cadetId === c.cadetId && r.date === date);
+                if (rec) {
+                    totalHeld++;
+                    if (rec.status === 'Present') presents++;
+                    return rec.status;
+                }
+                return 'N/A';
+            });
+            
+            const percentage = totalHeld > 0 ? ((presents / totalHeld) * 100).toFixed(1) + '%' : 'N/A';
+            return [
+                index + 1,
+                c.cadetId,
+                c.enrollmentNo || '',
+                c.rank,
+                c.name,
+                c.squadron.toUpperCase(),
+                c.year + ' Year',
+                ...dateStatuses,
+                totalHeld,
+                presents,
+                percentage
+            ];
+        });
+        
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + [headers.join(','), ...rows.map(e => e.map(val => '"' + val + '"').join(','))].join('\n');
+            
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", 'DTU_NCC_Collective_Parade_Attendance.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const handleDeleteClick = async (id) => {
         if (!confirm('Are you sure you want to delete this cadet?')) return;
         try {
@@ -1001,11 +1286,11 @@ function AppContent() {
     };
 
     const SquadronTable = ({ squadronId, borderTheme }) => {
-        // Exclude command board from squadron lists to prevent duplication
+        // Exclude command board from squadron lists (except Headquarters Platoon) to prevent duplication
         const sqCadets = cadets
             .filter(c => c.approved)
             .filter(c => c.squadron === squadronId)
-            .filter(c => !['SUO', 'CSM', 'CQMS', 'ANO'].includes(c.rank))
+            .filter(c => squadronId === 'hq' || !['SUO', 'CSM', 'CQMS', 'ANO'].includes(c.rank))
             .sort((a, b) => Number(b.year) - Number(a.year));
 
         return (
@@ -1013,6 +1298,7 @@ function AppContent() {
                 <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem' }}>
                     <thead>
                         <tr style={{ borderBottom: `2px solid ${borderTheme}` }}>
+                            <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
                             <th>Rank & Name (Click for Profile)</th>
                             <th>Cadet ID</th>
                             <th>DLI / Regt No</th>
@@ -1022,8 +1308,9 @@ function AppContent() {
                         </tr>
                     </thead>
                     <tbody>
-                        {sqCadets.map(c => (
+                        {sqCadets.map((c, index) => (
                             <tr key={c._id}>
+                                <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{index + 1}</td>
                                 <td>
                                     <button 
                                         onClick={() => setSelectedViewCadet({ ...c })}
@@ -1042,7 +1329,7 @@ function AppContent() {
                         ))}
                         {sqCadets.length === 0 && (
                             <tr>
-                                <td colSpan="6" className="text-center" style={{ color: 'var(--text-muted)', padding: '15px 0' }}>No registered cadets in this squadron.</td>
+                                <td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)', padding: '15px 0' }}>No registered cadets in this squadron.</td>
                             </tr>
                         )}
                     </tbody>
@@ -1120,7 +1407,7 @@ function AppContent() {
                             <li style={{ position: 'relative' }}>
                                 <a 
                                     href="#" 
-                                    className={`nav-link ${['dashboard', 'requests', 'directory', 'squadrons', 'settings'].includes(currentTab) ? 'active' : ''}`}
+                                    className={`nav-link ${['dashboard', 'requests', 'directory', 'squadrons', 'settings', 'attendance'].includes(currentTab) ? 'active' : ''}`}
                                     onClick={(e) => { 
                                         e.preventDefault(); 
                                         setAccountDropdownOpen(!accountDropdownOpen); 
@@ -1194,6 +1481,22 @@ function AppContent() {
                                                         }}
                                                     >
                                                         <i className="fa-solid fa-user-clock" style={{ width: '20px', color: 'var(--primary)' }}></i> Requests
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a 
+                                                        href="#" 
+                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentTab('attendance');
+                                                            setAccountDropdownOpen(false);
+                                                            setMobileMenuOpen(false);
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-calendar-check" style={{ width: '20px', color: 'var(--primary)' }}></i> Parade Attendance
                                                     </a>
                                                 </li>
                                                 <li>
@@ -3200,6 +3503,377 @@ function AppContent() {
                                         <p style={{ margin: '5px 0 0 0', fontSize: '0.82rem' }}>All registered cadets are currently approved.</p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {currentTab === 'attendance' && user && ['admin', 'ano', 'suo', 'cqms'].includes(user.role) && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                            <div className="section-header">
+                                <h2>Parade Attendance Sheet</h2>
+                                <p>Mark and record parade attendance. Approved leaves are automatically cross-referenced.</p>
+                            </div>
+
+                            <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', marginBottom: '25px' }}>
+                                {/* Controls Row */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '20px' }}>
+                                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label className="form-label" style={{ fontSize: '0.8rem', fontWeight: '700' }}>Parade Date:</label>
+                                            <input 
+                                                type="date" 
+                                                className="form-control" 
+                                                value={paradeDate} 
+                                                onChange={(e) => setParadeDate(e.target.value)} 
+                                                style={{ fontSize: '0.85rem', width: '160px', padding: '6px 10px' }} 
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                        <button className="btn btn-outline" onClick={handleMarkAllPresent} style={{ fontSize: '0.8rem', padding: '8px 14px' }}>
+                                            <i className="fa-solid fa-check-double"></i> Mark All Present
+                                        </button>
+                                        <button className="btn btn-outline" onClick={handleMarkAllAbsent} style={{ fontSize: '0.8rem', padding: '8px 14px', borderColor: 'var(--danger)', color: 'var(--danger)' }}>
+                                            <i className="fa-solid fa-xmark"></i> Mark All Absent
+                                        </button>
+                                        <button className="btn btn-outline" onClick={handleExportToCSV} style={{ fontSize: '0.8rem', padding: '8px 14px', borderColor: 'var(--navy-blue)', color: 'var(--navy-blue)' }}>
+                                            <i className="fa-solid fa-file-csv"></i> Export to CSV
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Stats Panel */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '15px', marginBottom: '25px', backgroundColor: '#f8fafc', padding: '15px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700' }}>TOTAL CADETS</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--navy-blue)' }}>
+                                            {cadets.filter(c => c.approved).length}
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: '700' }}>PRESENT</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--success)' }}>
+                                            {cadets.filter(c => c.approved).filter(c => (localAttendanceSheet[c.cadetId] || 'Present') === 'Present').length}
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--danger)', fontWeight: '700' }}>ABSENT</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--danger)' }}>
+                                            {cadets.filter(c => c.approved).filter(c => (localAttendanceSheet[c.cadetId] || 'Present') === 'Absent').length}
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: '700' }}>EXCUSED (LEAVE)</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#d97706' }}>
+                                            {cadets.filter(c => c.approved).filter(c => (localAttendanceSheet[c.cadetId] || 'Present') === 'Excused').length}
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: '700' }}>EST. SQUADRON DEDUCTION</div>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary)' }}>
+                                            -{getEstimatedDeductions()} pts
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 2 Tables for Parade Attendance (3rd Year & 2nd Year) */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                    {/* 3rd Year Table */}
+                                    {(() => {
+                                        const getSqnOrder = (sqn) => {
+                                            const order = { 'hq': 1, 'alpha': 2, 'bravo': 3, 'charlie': 4, 'delta': 5 };
+                                            return order[sqn.toLowerCase()] || 99;
+                                        };
+                                        const thirdYearCadets = [...cadets]
+                                            .filter(c => c.approved && c.year === 3)
+                                            .sort((a, b) => {
+                                                const sqnA = getSqnOrder(a.squadron);
+                                                const sqnB = getSqnOrder(b.squadron);
+                                                if (sqnA !== sqnB) return sqnA - sqnB;
+                                                return a.name.localeCompare(b.name);
+                                            });
+
+                                        if (thirdYearCadets.length === 0) return null;
+
+                                        return (
+                                            <div style={{ padding: '20px', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderLeft: '5px solid var(--primary)', borderRadius: 'var(--radius-md)' }}>
+                                                <h3 style={{ color: 'var(--primary)', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <i className="fa-solid fa-graduation-cap"></i> 3rd Year Parade Attendance (HQ → Alpha → Bravo → Charlie → Delta)
+                                                </h3>
+                                                <div style={{ overflowX: 'auto' }}>
+                                                    <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.8rem', margin: 0 }}>
+                                                        <thead>
+                                                            <tr style={{ backgroundColor: '#f1f5f9' }}>
+                                                                <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
+                                                                <th>Cadet ID</th>
+                                                                <th>Regt No</th>
+                                                                <th>Rank & Name</th>
+                                                                <th style={{ textTransform: 'uppercase' }}>Squadron</th>
+                                                                <th style={{ width: '125px', textAlign: 'center' }}>Status</th>
+                                                                <th>Leave Exemption Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {thirdYearCadets.map((c, index) => {
+                                                                const hasLeave = exemptions.find(e => e.cadetId === c.cadetId && e.date === paradeDate && e.status === 'Approved');
+                                                                return (
+                                                                    <tr key={c._id} style={{ backgroundColor: hasLeave ? '#fefaf0' : 'transparent' }}>
+                                                                        <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{index + 1}</td>
+                                                                        <td><strong>{c.cadetId}</strong></td>
+                                                                        <td>{c.enrollmentNo || c.dliNo}</td>
+                                                                        <td style={{ fontWeight: '700', color: 'var(--navy-blue)' }}>{c.rank} {c.name}</td>
+                                                                        <td style={{ textTransform: 'uppercase', fontWeight: '700' }}>{c.squadron}</td>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            <select
+                                                                                className="form-control"
+                                                                                style={{
+                                                                                    fontSize: '0.78rem',
+                                                                                    padding: '4px 6px',
+                                                                                    width: '105px',
+                                                                                    border: '1px solid var(--border)',
+                                                                                    borderRadius: 'var(--radius-sm)',
+                                                                                    color: (localAttendanceSheet[c.cadetId] || 'Present') === 'Present' ? 'var(--success)' : (localAttendanceSheet[c.cadetId] || 'Present') === 'Absent' ? 'var(--danger)' : '#d97706',
+                                                                                    fontWeight: '700',
+                                                                                    backgroundColor: '#fff'
+                                                                                }}
+                                                                                value={localAttendanceSheet[c.cadetId] || 'Present'}
+                                                                                onChange={(e) => {
+                                                                                    setLocalAttendanceSheet(prev => ({
+                                                                                        ...prev,
+                                                                                        [c.cadetId]: e.target.value
+                                                                                    }));
+                                                                                }}
+                                                                                disabled={!!hasLeave}
+                                                                            >
+                                                                                <option value="Present" style={{ color: 'var(--success)' }}>Present</option>
+                                                                                <option value="Absent" style={{ color: 'var(--danger)' }}>Absent</option>
+                                                                                <option value="Excused" style={{ color: '#d97706' }}>Excused</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td>
+                                                                            {hasLeave ? (
+                                                                                <span className="badge" style={{ backgroundColor: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', fontWeight: '700', fontSize: '0.7rem' }}>
+                                                                                    <i className="fa-solid fa-circle-check"></i> Excused (Leave Approved)
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>No approved leave requests</span>
+                                                                            )}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* 2nd Year Table */}
+                                    {(() => {
+                                        const getSqnOrder = (sqn) => {
+                                            const order = { 'hq': 1, 'alpha': 2, 'bravo': 3, 'charlie': 4, 'delta': 5 };
+                                            return order[sqn.toLowerCase()] || 99;
+                                        };
+                                        const secondYearCadets = [...cadets]
+                                            .filter(c => c.approved && c.year === 2)
+                                            .sort((a, b) => {
+                                                const sqnA = getSqnOrder(a.squadron);
+                                                const sqnB = getSqnOrder(b.squadron);
+                                                if (sqnA !== sqnB) return sqnA - sqnB;
+                                                return a.name.localeCompare(b.name);
+                                            });
+
+                                        if (secondYearCadets.length === 0) return null;
+
+                                        return (
+                                            <div style={{ padding: '20px', backgroundColor: '#fcfcfc', border: '1px solid var(--border)', borderLeft: '5px solid var(--secondary)', borderRadius: 'var(--radius-md)' }}>
+                                                <h3 style={{ color: 'var(--secondary)', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <i className="fa-solid fa-award"></i> 2nd Year Parade Attendance (HQ → Alpha → Bravo → Charlie → Delta)
+                                                </h3>
+                                                <div style={{ overflowX: 'auto' }}>
+                                                    <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.8rem', margin: 0 }}>
+                                                        <thead>
+                                                            <tr style={{ backgroundColor: '#f1f5f9' }}>
+                                                                <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
+                                                                <th>Cadet ID</th>
+                                                                <th>Regt No</th>
+                                                                <th>Rank & Name</th>
+                                                                <th style={{ textTransform: 'uppercase' }}>Squadron</th>
+                                                                <th style={{ width: '125px', textAlign: 'center' }}>Status</th>
+                                                                <th>Leave Exemption Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {secondYearCadets.map((c, index) => {
+                                                                const hasLeave = exemptions.find(e => e.cadetId === c.cadetId && e.date === paradeDate && e.status === 'Approved');
+                                                                return (
+                                                                    <tr key={c._id} style={{ backgroundColor: hasLeave ? '#fefaf0' : 'transparent' }}>
+                                                                        <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{index + 1}</td>
+                                                                        <td><strong>{c.cadetId}</strong></td>
+                                                                        <td>{c.enrollmentNo || c.dliNo}</td>
+                                                                        <td style={{ fontWeight: '700', color: 'var(--navy-blue)' }}>{c.rank} {c.name}</td>
+                                                                        <td style={{ textTransform: 'uppercase', fontWeight: '700' }}>{c.squadron}</td>
+                                                                        <td style={{ textAlign: 'center' }}>
+                                                                            <select
+                                                                                className="form-control"
+                                                                                style={{
+                                                                                    fontSize: '0.78rem',
+                                                                                    padding: '4px 6px',
+                                                                                    width: '105px',
+                                                                                    border: '1px solid var(--border)',
+                                                                                    borderRadius: 'var(--radius-sm)',
+                                                                                    color: (localAttendanceSheet[c.cadetId] || 'Present') === 'Present' ? 'var(--success)' : (localAttendanceSheet[c.cadetId] || 'Present') === 'Absent' ? 'var(--danger)' : '#d97706',
+                                                                                    fontWeight: '700',
+                                                                                    backgroundColor: '#fff'
+                                                                                }}
+                                                                                value={localAttendanceSheet[c.cadetId] || 'Present'}
+                                                                                onChange={(e) => {
+                                                                                    setLocalAttendanceSheet(prev => ({
+                                                                                        ...prev,
+                                                                                        [c.cadetId]: e.target.value
+                                                                                    }));
+                                                                                }}
+                                                                                disabled={!!hasLeave}
+                                                                            >
+                                                                                <option value="Present" style={{ color: 'var(--success)' }}>Present</option>
+                                                                                <option value="Absent" style={{ color: 'var(--danger)' }}>Absent</option>
+                                                                                <option value="Excused" style={{ color: '#d97706' }}>Excused</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td>
+                                                                            {hasLeave ? (
+                                                                                <span className="badge" style={{ backgroundColor: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', fontWeight: '700', fontSize: '0.7rem' }}>
+                                                                                    <i className="fa-solid fa-circle-check"></i> Excused (Leave Approved)
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>No approved leave requests</span>
+                                                                            )}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+
+                                {/* Submit Row */}
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '20px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                                    <button className="btn btn-outline" onClick={() => loadAttendanceSheetForDate(paradeDate)}>
+                                        <i className="fa-solid fa-arrows-rotate"></i> Reset Sheet
+                                    </button>
+                                    <button className="btn btn-primary" onClick={handleSubmitAttendanceSheet}>
+                                        <i className="fa-solid fa-cloud-arrow-up"></i> Submit Attendance Sheet
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Parade Logs & History Ledger */}
+                            <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', marginTop: '30px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '15px' }}>
+                                    <h3 style={{ fontSize: '1.1rem', margin: 0, fontWeight: '700', color: 'var(--navy-blue)' }}>
+                                        <i className="fa-solid fa-clock-rotate-left"></i> Parade Attendance Logs & History
+                                    </h3>
+                                    <button 
+                                        className="btn btn-primary" 
+                                        onClick={handleExportAllParadesToCSV} 
+                                        style={{ fontSize: '0.78rem', padding: '6px 12px', backgroundColor: 'var(--navy-blue)', borderColor: 'var(--navy-blue)' }}
+                                        title="Download collective spreadsheet of all parade attendance data"
+                                    >
+                                        <i className="fa-solid fa-file-excel"></i> Export Collective Sheet (All Parades)
+                                    </button>
+                                </div>
+                                <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                                    <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem', margin: 0 }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: '#f1f5f9' }}>
+                                                <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
+                                                <th>Parade Date (Click to Download CSV)</th>
+                                                <th>Total Enrolled</th>
+                                                <th style={{ color: 'var(--success)' }}>Presents</th>
+                                                <th style={{ color: 'var(--danger)' }}>Absents</th>
+                                                <th style={{ color: '#d97706' }}>Excused</th>
+                                                <th style={{ width: '150px', textAlign: 'center' }}>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(() => {
+                                                const markedDates = [];
+                                                const dateMap = {};
+                                                attendance.forEach(a => {
+                                                    if (!dateMap[a.date]) {
+                                                        dateMap[a.date] = {
+                                                            date: a.date,
+                                                            present: 0,
+                                                            absent: 0,
+                                                            excused: 0,
+                                                            total: 0
+                                                        };
+                                                        markedDates.push(dateMap[a.date]);
+                                                    }
+                                                    dateMap[a.date].total++;
+                                                    if (a.status === 'Present') dateMap[a.date].present++;
+                                                    else if (a.status === 'Absent') dateMap[a.date].absent++;
+                                                    else if (a.status === 'Excused') dateMap[a.date].excused++;
+                                                });
+                                                markedDates.sort((a, b) => new Date(b.date) - new Date(a.date));
+                                                
+                                                if (markedDates.length === 0) {
+                                                    return <tr><td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No parade attendance logs found in database.</td></tr>;
+                                                }
+                                                
+                                                return markedDates.map((item, index) => (
+                                                    <tr key={item.date}>
+                                                        <td style={{ textAlign: 'center' }}>{index + 1}</td>
+                                                        <td>
+                                                            <button 
+                                                                onClick={() => handleExportDateToCSV(item.date)}
+                                                                style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                                                title="Download CSV for this date"
+                                                            >
+                                                                {item.date} <i className="fa-solid fa-download" style={{ fontSize: '0.75rem', marginLeft: '4px' }}></i>
+                                                            </button>
+                                                        </td>
+                                                        <td>{item.total} cadets</td>
+                                                        <td style={{ color: 'var(--success)', fontWeight: '700' }}>{item.present}</td>
+                                                        <td style={{ color: 'var(--danger)', fontWeight: '700' }}>{item.absent}</td>
+                                                        <td style={{ color: '#d97706', fontWeight: '700' }}>{item.excused}</td>
+                                                        <td style={{ textAlign: 'center' }}>
+                                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                                                <button 
+                                                                    className="btn btn-outline" 
+                                                                    onClick={() => {
+                                                                        setParadeDate(item.date);
+                                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                                    }}
+                                                                    style={{ padding: '4px 10px', fontSize: '0.75rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                                                                    title="Load this date in attendance sheets to edit"
+                                                                >
+                                                                    <i className="fa-solid fa-pen-to-square"></i> Edit
+                                                                </button>
+                                                                <button 
+                                                                    className="btn btn-outline" 
+                                                                    onClick={() => handleDeleteParadeAttendance(item.date)}
+                                                                    style={{ padding: '4px 10px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                                                                    title="Delete all attendance logs for this day"
+                                                                >
+                                                                    <i className="fa-solid fa-trash"></i> Delete
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ));
+                                            })()}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
