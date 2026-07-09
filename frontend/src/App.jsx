@@ -55,6 +55,8 @@ function AppContent() {
     const [regAltContact, setRegAltContact] = useState('');
     const [regAddress, setRegAddress] = useState('');
     const [regResidenceType, setRegResidenceType] = useState('Hostel');
+    const [regHostelNo, setRegHostelNo] = useState('');
+    const [regPgLocation, setRegPgLocation] = useState('');
     const [regCity, setRegCity] = useState('');
     const [regPincode, setRegPincode] = useState('');
     const [regFatherName, setRegFatherName] = useState('');
@@ -133,6 +135,9 @@ function AppContent() {
     const [cadetContact, setCadetContact] = useState('');
     const [cadetEmail, setCadetEmail] = useState('');
     const [cadetDob, setCadetDob] = useState('');
+    const [cadetResidenceType, setCadetResidenceType] = useState('Hostel');
+    const [cadetHostelNo, setCadetHostelNo] = useState('');
+    const [cadetPgLocation, setCadetPgLocation] = useState('');
     const [adminCadetMsg, setAdminCadetMsg] = useState('');
 
     // Simulator Forms State
@@ -485,6 +490,8 @@ function AppContent() {
                     altContact: regAltContact,
                     address: regAddress,
                     residenceType: regResidenceType,
+                    hostelNo: regResidenceType === 'Hostel' ? regHostelNo : '',
+                    pgLocation: regResidenceType === 'PG/Flat' ? regPgLocation : '',
                     city: regCity,
                     pincode: regPincode,
                     fatherName: regFatherName,
@@ -511,6 +518,8 @@ function AppContent() {
                 setRegAltContact('');
                 setRegAltContact('');
                 setRegAddress('');
+                setRegHostelNo('');
+                setRegPgLocation('');
                 setRegCity('');
                 setRegPincode('');
                 setRegFatherName('');
@@ -681,7 +690,10 @@ function AppContent() {
             year: parseInt(cadetYear),
             contact: cadetContact,
             email: cadetEmail,
-            dob: cadetDob
+            dob: cadetDob,
+            residenceType: cadetResidenceType,
+            hostelNo: cadetResidenceType === 'Hostel' ? cadetHostelNo : '',
+            pgLocation: cadetResidenceType === 'PG/Flat' ? cadetPgLocation : ''
         };
 
         try {
@@ -709,6 +721,9 @@ function AppContent() {
                 setCadetContact('');
                 setCadetEmail('');
                 setCadetDob('');
+                setCadetResidenceType('Hostel');
+                setCadetHostelNo('');
+                setCadetPgLocation('');
                 fetchAdminData();
             } else {
                 setAdminCadetMsg(data.message || 'Operation failed.');
@@ -729,6 +744,9 @@ function AppContent() {
         setCadetContact(c.contact);
         setCadetEmail(c.email);
         setCadetDob(c.dob || '');
+        setCadetResidenceType(c.residenceType || 'Hostel');
+        setCadetHostelNo(c.hostelNo || '');
+        setCadetPgLocation(c.pgLocation || '');
         document.getElementById('cadet-form-section')?.scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -1878,12 +1896,25 @@ function AppContent() {
                                                 <input type="text" className="form-control" placeholder="Parents/backup number" value={regAltContact} onChange={(e) => setRegAltContact(e.target.value)} />
                                             </div>
                                             <div className="form-group">
-                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel / Day Scholar *</label>
-                                                <select className="form-control" value={regResidenceType} onChange={(e) => setRegResidenceType(e.target.value)} required>
-                                                    <option value="Hostel">Hostel Resident</option>
-                                                    <option value="Day Scholar">Day Scholar</option>
-                                                </select>
-                                            </div>
+                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel / Day Scholar / PG *</label>
+                                                 <select className="form-control" value={regResidenceType} onChange={(e) => setRegResidenceType(e.target.value)} required>
+                                                     <option value="Hostel">Hostel Resident</option>
+                                                     <option value="Day Scholar">Day Scholar</option>
+                                                     <option value="PG/Flat">PG/Flat</option>
+                                                 </select>
+                                             </div>
+                                             {regResidenceType === 'Hostel' && (
+                                                 <div className="form-group">
+                                                     <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel Number *</label>
+                                                     <input type="text" className="form-control" placeholder="E.g., Hostel 3 (Kailash)" value={regHostelNo} onChange={(e) => setRegHostelNo(e.target.value)} required />
+                                                 </div>
+                                             )}
+                                             {regResidenceType === 'PG/Flat' && (
+                                                 <div className="form-group">
+                                                     <label className="form-label" style={{ fontSize: '0.78rem' }}>PG/Flat Location *</label>
+                                                     <input type="text" className="form-control" placeholder="E.g., Sector 15 Rohini" value={regPgLocation} onChange={(e) => setRegPgLocation(e.target.value)} required />
+                                                 </div>
+                                             )}
                                             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Full Address *</label>
                                                 <input type="text" className="form-control" placeholder="House/Hostel name and room number" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} required />
@@ -2833,12 +2864,32 @@ function AppContent() {
                                                                 <label className="form-label" style={{ fontSize: '0.78rem' }}>Email Address (@dtuncc.in) *</label>
                                                                 <input type="email" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetEmail} onChange={(e) => setCadetEmail(e.target.value)} required />
                                                             </div>
+                                                            <div className="form-group">
+                                                                <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel / Day Scholar / PG *</label>
+                                                                <select className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} value={cadetResidenceType} onChange={(e) => setCadetResidenceType(e.target.value)} required>
+                                                                    <option value="Hostel">Hostel Resident</option>
+                                                                    <option value="Day Scholar">Day Scholar</option>
+                                                                    <option value="PG/Flat">PG/Flat</option>
+                                                                </select>
+                                                            </div>
+                                                            {cadetResidenceType === 'Hostel' && (
+                                                                <div className="form-group">
+                                                                    <label className="form-label" style={{ fontSize: '0.78rem' }}>Hostel Number *</label>
+                                                                    <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} placeholder="E.g., Hostel 3" value={cadetHostelNo} onChange={(e) => setCadetHostelNo(e.target.value)} required />
+                                                                </div>
+                                                            )}
+                                                            {cadetResidenceType === 'PG/Flat' && (
+                                                                <div className="form-group">
+                                                                    <label className="form-label" style={{ fontSize: '0.78rem' }}>PG/Flat Location *</label>
+                                                                    <input type="text" className="form-control" style={{ fontSize: '0.82rem', padding: '8px 12px' }} placeholder="E.g., Sector 15" value={cadetPgLocation} onChange={(e) => setCadetPgLocation(e.target.value)} required />
+                                                                </div>
+                                                            )}
                                                         </div>
                                                         <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                                                             <button type="submit" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
                                                                 <i className="fa-solid fa-floppy-disk"></i> Save Updates
                                                             </button>
-                                                            <button type="button" className="btn btn-outline" onClick={() => { setEditingCadetId(null); setCadetName(''); setCadetEnrollment(''); setCadetContact(''); setCadetEmail(''); setCadetDob(''); }} style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
+                                                            <button type="button" className="btn btn-outline" onClick={() => { setEditingCadetId(null); setCadetName(''); setCadetEnrollment(''); setCadetContact(''); setCadetEmail(''); setCadetDob(''); setCadetResidenceType('Hostel'); setCadetHostelNo(''); setCadetPgLocation(''); }} style={{ fontSize: '0.85rem', padding: '10px 20px' }}>
                                                                 Cancel
                                                             </button>
                                                         </div>
@@ -3178,7 +3229,11 @@ function AppContent() {
                                     <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Alt Mobile</strong>: {selectedViewCadet.altContact || 'N/A'}</p>
                                     <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Mail ID</strong>: {selectedViewCadet.email || 'N/A'}</p>
                                     <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>Address</strong>: {selectedViewCadet.address || 'N/A'}</p>
-                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}><strong>City/Pincode</strong>: {selectedViewCadet.city || 'N/A'} - {selectedViewCadet.pincode || 'N/A'} ({selectedViewCadet.residenceType || 'N/A'})</p>
+                                    <p style={{ fontSize: '0.85rem', marginBottom: '6px' }}>
+                                         <strong>City/Pincode</strong>: {selectedViewCadet.city || 'N/A'} - {selectedViewCadet.pincode || 'N/A'} ({selectedViewCadet.residenceType || 'N/A'})
+                                         {selectedViewCadet.residenceType === 'Hostel' && selectedViewCadet.hostelNo && ` | Hostel No: ${selectedViewCadet.hostelNo}`}
+                                         {selectedViewCadet.residenceType === 'PG/Flat' && selectedViewCadet.pgLocation && ` | PG Loc: ${selectedViewCadet.pgLocation}`}
+                                     </p>
                                 </div>
 
                                 {/* Block 3: Parents & Medical */}

@@ -103,6 +103,14 @@ const CadetSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    pgLocation: {
+        type: String,
+        trim: true
+    },
+    hostelNo: {
+        type: String,
+        trim: true
+    },
     city: {
         type: String,
         trim: true

@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
     const {
         name, enrollmentNo, squadron, rank, wing, year, contact, email, dob,
         college, dliNo, bloodGroup, course, branch, collegeRollNo, academicYear,
-        altContact, address, residenceType, city, pincode, fatherName, motherName,
+        altContact, address, residenceType, pgLocation, hostelNo, city, pincode, fatherName, motherName,
         guardianName, allergies, medicalConditions, medications, campsAttended, otherDetails
     } = req.body;
 
@@ -52,6 +52,8 @@ router.post('/', async (req, res) => {
             altContact,
             address,
             residenceType,
+            pgLocation,
+            hostelNo,
             city,
             pincode,
             fatherName,
@@ -92,7 +94,7 @@ router.put('/:id', async (req, res) => {
     const {
         name, enrollmentNo, squadron, rank, wing, year, contact, email, dob,
         college, dliNo, bloodGroup, course, branch, collegeRollNo, academicYear,
-        altContact, address, residenceType, city, pincode, fatherName, motherName,
+        altContact, address, residenceType, pgLocation, hostelNo, city, pincode, fatherName, motherName,
         guardianName, allergies, medicalConditions, medications, campsAttended, otherDetails
     } = req.body;
 
@@ -122,6 +124,8 @@ router.put('/:id', async (req, res) => {
         if (altContact !== undefined) cadet.altContact = altContact;
         if (address !== undefined) cadet.address = address;
         if (residenceType !== undefined) cadet.residenceType = residenceType;
+        if (pgLocation !== undefined) cadet.pgLocation = pgLocation;
+        if (hostelNo !== undefined) cadet.hostelNo = hostelNo;
         if (city !== undefined) cadet.city = city;
         if (pincode !== undefined) cadet.pincode = pincode;
         if (fatherName !== undefined) cadet.fatherName = fatherName;

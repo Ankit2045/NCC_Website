@@ -323,7 +323,7 @@ router.post('/register', async (req, res) => {
     const {
         name, enrollmentNo, squadron, rank, wing, year, contact, email, password, dob,
         college, dliNo, bloodGroup, course, branch, collegeRollNo, academicYear,
-        altContact, address, residenceType, city, pincode, fatherName, motherName,
+        altContact, address, residenceType, pgLocation, hostelNo, city, pincode, fatherName, motherName,
         guardianName, allergies, medicalConditions, medications, campsAttended, otherDetails
     } = req.body;
 
@@ -370,6 +370,8 @@ router.post('/register', async (req, res) => {
             altContact,
             address,
             residenceType,
+            pgLocation,
+            hostelNo,
             city,
             pincode,
             fatherName,
