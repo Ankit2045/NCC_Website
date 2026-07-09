@@ -2045,6 +2045,7 @@ function AppContent() {
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
                                             {renderProfileCard("Prof. Prateek Sharma", "Colonel Commandant", "var(--primary)", "var(--primary)", "gallery/vc_prateek.png")}
+                                            {renderProfileCard("Col. Gurpreet Singh", "Commanding Officer (CO)", "var(--primary)", "var(--primary)", "gallery/co_gurpreet.png")}
                                             {renderProfileCard("Lt. Dr. Raghveder Gautam", "Associate NCC Officer", "var(--saffron)", "var(--saffron)", "gallery/ano_raghvender.jpg")}
                                         </div>
                                     </div>
