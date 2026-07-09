@@ -787,6 +787,40 @@ function AppContent() {
         }
     };
 
+    const handleDeleteTurnoutPenalty = async (squadronId, penaltyId) => {
+        if (!window.confirm('Are you sure you want to remove this turnout penalty?')) return;
+        try {
+            const res = await fetch(`/api/leaderboard/turnout/${squadronId}/${penaltyId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                alert('Turnout penalty removed successfully!');
+                fetchPublicData();
+            } else {
+                alert('Failed to remove turnout penalty');
+            }
+        } catch (err) {
+            console.error('Error deleting turnout penalty:', err);
+        }
+    };
+
+    const handleDeleteContributionPenalty = async (squadronId, penaltyId) => {
+        if (!window.confirm('Are you sure you want to remove this contribution penalty?')) return;
+        try {
+            const res = await fetch(`/api/leaderboard/contribution/${squadronId}/${penaltyId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                alert('Contribution penalty removed successfully!');
+                fetchPublicData();
+            } else {
+                alert('Failed to remove contribution penalty');
+            }
+        } catch (err) {
+            console.error('Error deleting contribution penalty:', err);
+        }
+    };
+
     const handleDeleteClick = async (id) => {
         if (!confirm('Are you sure you want to delete this cadet?')) return;
         try {
@@ -2770,6 +2804,113 @@ function AppContent() {
                                                     </div>
                                                 </div>
                                             )}
+                                        </div>
+
+                                        {/* Turnout and Contribution Penalty Ledgers */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '25px' }}>
+                                            <div className="dashboard-section" style={{ padding: '20px' }}>
+                                                <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', fontWeight: '700', color: 'var(--navy-blue)' }}><i className="fa-solid fa-shirt"></i> CSM Turnout Penalties</h3>
+                                                <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                                                    <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.8rem' }}>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Squadron</th>
+                                                                <th>Deduction</th>
+                                                                <th>Date</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {(() => {
+                                                                const penalties = [];
+                                                                leaderboard.forEach(sq => {
+                                                                    if (sq.turnoutHistory) {
+                                                                        sq.turnoutHistory.forEach(p => {
+                                                                            penalties.push({ sqId: sq.squadronId, sqName: sq.name, ...p });
+                                                                        });
+                                                                    }
+                                                                });
+                                                                penalties.sort((a, b) => new Date(b.date) - new Date(a.date));
+                                                                
+                                                                if (penalties.length === 0) {
+                                                                    return <tr><td colSpan="4" style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '15px 0' }}>No turnout penalties recorded.</td></tr>;
+                                                                }
+                                                                
+                                                                return penalties.map(p => (
+                                                                    <tr key={p._id}>
+                                                                        <td style={{ textTransform: 'uppercase' }}>{p.sqId}</td>
+                                                                        <td style={{ color: 'var(--danger)', fontWeight: '700' }}>-{p.points} pts</td>
+                                                                        <td>{p.date}</td>
+                                                                        <td>
+                                                                            <button 
+                                                                                type="button" 
+                                                                                className="btn btn-outline" 
+                                                                                onClick={() => handleDeleteTurnoutPenalty(p.sqId, p._id)} 
+                                                                                style={{ padding: '2px 6px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                                                                                title="Undo this penalty"
+                                                                            >
+                                                                                <i className="fa-solid fa-trash"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ));
+                                                            })()}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            <div className="dashboard-section" style={{ padding: '20px' }}>
+                                                <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', fontWeight: '700', color: 'var(--navy-blue)' }}><i className="fa-solid fa-triangle-exclamation"></i> SUO Contribution Penalties</h3>
+                                                <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                                                    <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.8rem' }}>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Squadron</th>
+                                                                <th>Deduction</th>
+                                                                <th>Date</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {(() => {
+                                                                const penalties = [];
+                                                                leaderboard.forEach(sq => {
+                                                                    if (sq.contributionHistory) {
+                                                                        sq.contributionHistory.forEach(p => {
+                                                                            penalties.push({ sqId: sq.squadronId, sqName: sq.name, ...p });
+                                                                        });
+                                                                    }
+                                                                });
+                                                                penalties.sort((a, b) => new Date(b.date) - new Date(a.date));
+                                                                
+                                                                if (penalties.length === 0) {
+                                                                    return <tr><td colSpan="4" style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '15px 0' }}>No contribution penalties recorded.</td></tr>;
+                                                                }
+                                                                
+                                                                return penalties.map(p => (
+                                                                    <tr key={p._id}>
+                                                                        <td style={{ textTransform: 'uppercase' }}>{p.sqId}</td>
+                                                                        <td style={{ color: 'var(--danger)', fontWeight: '700' }}>-{p.points} pts</td>
+                                                                        <td>{p.date}</td>
+                                                                        <td>
+                                                                            <button 
+                                                                                type="button" 
+                                                                                className="btn btn-outline" 
+                                                                                onClick={() => handleDeleteContributionPenalty(p.sqId, p._id)} 
+                                                                                style={{ padding: '2px 6px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                                                                                title="Undo this penalty"
+                                                                            >
+                                                                                <i className="fa-solid fa-trash"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ));
+                                                            })()}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {/* Fines and logs summary side-by-side */}

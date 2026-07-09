@@ -171,4 +171,36 @@ router.delete('/competition/:id', async (req, res) => {
     }
 });
 
+// DELETE remove turnout penalty
+router.delete('/turnout/:squadronId/:penaltyId', async (req, res) => {
+    try {
+        const squadron = await Squadron.findOne({ squadronId: req.params.squadronId });
+        if (!squadron) return res.status(404).json({ message: 'Squadron not found' });
+
+        squadron.turnoutDeductions = squadron.turnoutDeductions.filter(
+            d => d._id.toString() !== req.params.penaltyId
+        );
+        await squadron.save();
+        res.json({ message: 'Turnout penalty removed successfully!', squadron });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// DELETE remove contribution penalty
+router.delete('/contribution/:squadronId/:penaltyId', async (req, res) => {
+    try {
+        const squadron = await Squadron.findOne({ squadronId: req.params.squadronId });
+        if (!squadron) return res.status(404).json({ message: 'Squadron not found' });
+
+        squadron.contributionDeductions = squadron.contributionDeductions.filter(
+            d => d._id.toString() !== req.params.penaltyId
+        );
+        await squadron.save();
+        res.json({ message: 'Contribution penalty removed successfully!', squadron });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
