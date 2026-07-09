@@ -1368,47 +1368,71 @@ function AppContent() {
                 return a.name.localeCompare(b.name);
             });
 
+        const cadets3rd = sqCadets.filter(c => Number(c.year) === 3);
+        const cadets2nd = sqCadets.filter(c => Number(c.year) === 2);
+        const cadets1st = sqCadets.filter(c => Number(c.year) === 1);
+
+        const renderTableSection = (title, list) => {
+            if (list.length === 0) return null;
+            return (
+                <div style={{ marginBottom: '25px' }}>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: '700', color: borderTheme, marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', borderLeft: `3px solid ${borderTheme}`, paddingLeft: '8px', textAlign: 'left' }}>
+                        {title} ({list.length} Cadets)
+                    </h4>
+                    <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', marginBottom: '15px' }}>
+                        <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem', margin: 0 }}>
+                            <thead>
+                                <tr style={{ backgroundColor: '#f8fafc', borderBottom: `2px solid ${borderTheme}` }}>
+                                    <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
+                                    <th>Rank & Name (Click for Profile)</th>
+                                    <th>Cadet ID</th>
+                                    <th>DLI / Regt No</th>
+                                    <th>Year</th>
+                                    <th>Contact</th>
+                                    <th>Blood Group</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {list.map((c, index) => (
+                                    <tr key={c._id}>
+                                        <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{index + 1}</td>
+                                        <td>
+                                            <button 
+                                                onClick={() => setSelectedViewCadet({ ...c })}
+                                                style={{ background: 'none', border: 'none', color: borderTheme, fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                                title="View full cadet profile details"
+                                            >
+                                                {c.rank} {c.name}
+                                            </button>
+                                        </td>
+                                        <td>{c.cadetId}</td>
+                                        <td>{c.enrollmentNo || c.dliNo}</td>
+                                        <td>Year {c.year}</td>
+                                        <td>{c.contact}</td>
+                                        <td><span style={{ color: 'var(--danger)', fontWeight: '700' }}>{c.bloodGroup || 'N/A'}</span></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        if (sqCadets.length === 0) {
+            return (
+                <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                    <i className="fa-solid fa-folder-open" style={{ fontSize: '2.2rem', marginBottom: '10px' }}></i>
+                    <p style={{ margin: 0 }}>No registered cadets in this squadron.</p>
+                </div>
+            );
+        }
+
         return (
-            <div style={{ overflowX: 'auto' }}>
-                <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem' }}>
-                    <thead>
-                        <tr style={{ borderBottom: `2px solid ${borderTheme}` }}>
-                            <th style={{ width: '50px', textAlign: 'center' }}>S.No</th>
-                            <th>Rank & Name (Click for Profile)</th>
-                            <th>Cadet ID</th>
-                            <th>DLI / Regt No</th>
-                            <th>Year</th>
-                            <th>Contact</th>
-                            <th>Blood Group</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sqCadets.map((c, index) => (
-                            <tr key={c._id}>
-                                <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{index + 1}</td>
-                                <td>
-                                    <button 
-                                        onClick={() => setSelectedViewCadet({ ...c })}
-                                        style={{ background: 'none', border: 'none', color: borderTheme, fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                                        title="View full cadet profile details"
-                                    >
-                                        {c.rank} {c.name}
-                                    </button>
-                                </td>
-                                <td>{c.cadetId}</td>
-                                <td>{c.enrollmentNo || c.dliNo}</td>
-                                <td>Year {c.year}</td>
-                                <td>{c.contact}</td>
-                                <td><span style={{ color: 'var(--danger)', fontWeight: '700' }}>{c.bloodGroup || 'N/A'}</span></td>
-                            </tr>
-                        ))}
-                        {sqCadets.length === 0 && (
-                            <tr>
-                                <td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)', padding: '15px 0' }}>No registered cadets in this squadron.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+            <div>
+                {renderTableSection("3rd Year Cadets", cadets3rd)}
+                {renderTableSection("2nd Year Cadets", cadets2nd)}
+                {renderTableSection("1st Year Cadets", cadets1st)}
             </div>
         );
     };
