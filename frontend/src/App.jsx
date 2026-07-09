@@ -253,7 +253,7 @@ function AppContent() {
 
     useEffect(() => {
         if (user) {
-            if (user.role === 'admin') {
+            if (user.role !== 'cadet') {
                 fetchAdminData();
             } else {
                 fetchCadetData();
@@ -1306,7 +1306,7 @@ function AppContent() {
         try {
             const res = await fetch(`/api/fines/${fineId}/pay`, { method: 'PUT' });
             if (res.ok) {
-                if (user.role === 'admin') fetchAdminData();
+                if (user.role !== 'cadet') fetchAdminData();
                 else fetchCadetData();
             }
         } catch (err) {
