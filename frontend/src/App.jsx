@@ -823,6 +823,22 @@ function AppContent() {
         }
     };
 
+    const handleDeleteExemption = async (id) => {
+        if (!confirm('Are you sure you want to delete this leave exemption request record?')) return;
+        try {
+            const res = await fetch(`/api/exemptions/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert('Leave exemption request deleted successfully!');
+                fetchPublicData();
+                fetchAdminData();
+            } else {
+                alert('Failed to delete leave request.');
+            }
+        } catch (err) {
+            console.error('Error deleting exemption:', err);
+        }
+    };
+
     // Cadet CRUD Add/Edit
     const handleCadetSubmit = async (e) => {
         e.preventDefault();
@@ -3166,26 +3182,36 @@ function AppContent() {
                                                                     </span>
                                                                 </td>
                                                                 <td>
-                                                                    {e.status === 'Pending' ? (
-                                                                        <div style={{ display: 'flex', gap: '5px' }}>
-                                                                            <button 
-                                                                                className="btn btn-primary" 
-                                                                                style={{ padding: '4px 8px', fontSize: '0.75rem', backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}
-                                                                                onClick={() => handleExemptionDecision(e._id, 'Approved')}
-                                                                            >
-                                                                                Approve
-                                                                            </button>
-                                                                            <button 
-                                                                                className="btn btn-outline" 
-                                                                                style={{ padding: '4px 8px', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'var(--danger)' }}
-                                                                                onClick={() => handleExemptionDecision(e._id, 'Rejected')}
-                                                                            >
-                                                                                Reject
-                                                                            </button>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Processed</span>
-                                                                    )}
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        {e.status === 'Pending' ? (
+                                                                            <>
+                                                                                <button 
+                                                                                    className="btn btn-primary" 
+                                                                                    style={{ padding: '4px 8px', fontSize: '0.75rem', backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}
+                                                                                    onClick={() => handleExemptionDecision(e._id, 'Approved')}
+                                                                                >
+                                                                                    Approve
+                                                                                </button>
+                                                                                <button 
+                                                                                    className="btn btn-outline" 
+                                                                                    style={{ padding: '4px 8px', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'var(--danger)' }}
+                                                                                    onClick={() => handleExemptionDecision(e._id, 'Rejected')}
+                                                                                >
+                                                                                    Reject
+                                                                                </button>
+                                                                            </>
+                                                                        ) : (
+                                                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Processed</span>
+                                                                        )}
+                                                                        <button 
+                                                                            className="btn btn-outline" 
+                                                                            style={{ padding: '4px 6px', fontSize: '0.72rem', color: 'var(--danger)', borderColor: 'var(--danger)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                            onClick={() => handleDeleteExemption(e._id)}
+                                                                            title="Delete request"
+                                                                        >
+                                                                            <i className="fa-solid fa-trash"></i>
+                                                                        </button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         ))}

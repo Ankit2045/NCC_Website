@@ -72,4 +72,17 @@ router.put('/:id/status', async (req, res) => {
     }
 });
 
+// DELETE a leave request record
+router.delete('/:id', async (req, res) => {
+    try {
+        const deleted = await ExemptionRequest.findByIdAndDelete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ message: 'Leave request not found' });
+        }
+        res.json({ success: true, message: 'Leave request deleted successfully!' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
