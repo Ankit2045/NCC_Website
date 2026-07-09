@@ -1041,15 +1041,48 @@ function AppContent() {
                         )}
                         
                         {user && (
-                            <li>
-                                <a 
-                                    href="#" 
-                                    className={`nav-link ${currentTab === 'dashboard' ? 'active' : ''}`} 
-                                    onClick={() => { setCurrentTab('dashboard'); setMobileMenuOpen(false); }}
-                                >
-                                    {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
-                                </a>
-                            </li>
+                            <>
+                                <li>
+                                    <a 
+                                        href="#" 
+                                        className={`nav-link ${currentTab === 'dashboard' ? 'active' : ''}`} 
+                                        onClick={() => { setCurrentTab('dashboard'); setMobileMenuOpen(false); }}
+                                    >
+                                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) ? 'Admin Portal' : 'My Dashboard'}
+                                    </a>
+                                </li>
+                                {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                                    <>
+                                        <li>
+                                            <a 
+                                                href="#" 
+                                                className={`nav-link ${currentTab === 'requests' ? 'active' : ''}`} 
+                                                onClick={() => { setCurrentTab('requests'); setMobileMenuOpen(false); }}
+                                            >
+                                                Requests
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a 
+                                                href="#" 
+                                                className={`nav-link ${currentTab === 'directory' ? 'active' : ''}`} 
+                                                onClick={() => { setCurrentTab('directory'); setMobileMenuOpen(false); }}
+                                            >
+                                                Cadet Directory
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a 
+                                                href="#" 
+                                                className={`nav-link ${currentTab === 'squadrons' ? 'active' : ''}`} 
+                                                onClick={() => { setCurrentTab('squadrons'); setMobileMenuOpen(false); }}
+                                            >
+                                                Sqn List
+                                            </a>
+                                        </li>
+                                    </>
+                                )}
+                            </>
                         )}
                         {user && (
                             <li>
@@ -2165,9 +2198,11 @@ function AppContent() {
                                         <h2>Command Operations Dashboard</h2>
                                         <p>Welcome, {getRoleDisplayName(user.role)}. Manage 1 DBN unit records, notice boards, and leave permits.</p>
                                     </div>
-                                    <button className="btn btn-outline" onClick={handleResetDatabase} style={{ borderColor: 'var(--danger)', color: 'var(--danger)', fontSize: '0.8rem', padding: '8px 16px' }}>
-                                        <i className="fa-solid fa-triangle-exclamation"></i> Reset Database
-                                    </button>
+                                    {user.role === 'admin' && (
+                                        <button className="btn btn-outline" onClick={handleResetDatabase} style={{ borderColor: 'var(--danger)', color: 'var(--danger)', fontSize: '0.8rem', padding: '8px 16px' }}>
+                                            <i className="fa-solid fa-triangle-exclamation"></i> Reset Database
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className="admin-dashboard-flex">
@@ -2564,248 +2599,6 @@ function AppContent() {
                                             </form>
                                         </div>
 
-                                        {/* Administration & Squadron-wise Colored Tables Section (for Admin/ANO/SUO/CQMS/CSM only) */}
-                                        {user && ['admin', 'ano', 'suo', 'cqms', 'csm'].includes(user.role) && (
-                                            <div className="dashboard-section" style={{ padding: '25px', marginBottom: '25px', borderLeft: '5px solid var(--primary)', textAlign: 'left' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-                                                    <div>
-                                                        <h3 style={{ fontSize: '1.2rem', fontWeight: '700', margin: 0, color: 'var(--navy-blue)' }}>
-                                                            <i className="fa-solid fa-users-viewfinder"></i> Complete Squadron-wise Directory
-                                                        </h3>
-                                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                                            View complete cadet registries grouped by Alpha, Bravo, Charlie, and Delta Squadrons, plus Administration members.
-                                                        </p>
-                                                    </div>
-                                                    <button 
-                                                        className="btn btn-primary" 
-                                                        style={{ padding: '8px 16px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '5px' }}
-                                                        onClick={() => setShowSquadronGroupTables(!showSquadronGroupTables)}
-                                                    >
-                                                        {showSquadronGroupTables ? (
-                                                            <>Hide Directory <i className="fa-solid fa-chevron-up"></i></>
-                                                        ) : (
-                                                            <>Show Directory <i className="fa-solid fa-chevron-down"></i></>
-                                                        )}
-                                                    </button>
-                                                </div>
-
-                                                {showSquadronGroupTables && (
-                                                    <div style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                                                        
-                                                        {/* 1. Administration Registry Table */}
-                                                        <div style={{ border: '1px solid #cbd5e1', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#f8fafc' }}>
-                                                            <h4 style={{ color: '#475569', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #cbd5e1', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                <i className="fa-solid fa-shield-halved"></i> Unit Administration Registry
-                                                            </h4>
-                                                            <div style={{ overflowX: 'auto' }}>
-                                                                <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem' }}>
-                                                                    <thead>
-                                                                        <tr style={{ backgroundColor: '#e2e8f0' }}>
-                                                                            <th>Rank & Name</th>
-                                                                            <th>Role/Designation</th>
-                                                                            <th>DLI / Regt No</th>
-                                                                            <th>Squadron</th>
-                                                                            <th>Contact Details</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {cadets
-                                                                            .filter(c => ['SUO', 'CSM', 'CQMS', 'ANO'].includes(c.rank))
-                                                                            .map(c => (
-                                                                                <tr key={c._id}>
-                                                                                    <td>
-                                                                                        <button 
-                                                                                            onClick={() => setSelectedViewCadet({ ...c })}
-                                                                                            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                                                                                        >
-                                                                                            {c.rank} {c.name}
-                                                                                        </button>
-                                                                                    </td>
-                                                                                    <td><span className="badge" style={{ backgroundColor: '#475569', color: '#fff', fontSize: '0.7rem' }}>{c.rank === 'ANO' ? 'Associate Officer' : 'Command Board'}</span></td>
-                                                                                    <td>{c.enrollmentNo || c.dliNo}</td>
-                                                                                    <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
-                                                                                    <td>{c.contact} | {c.email}</td>
-                                                                                </tr>
-                                                                            ))}
-                                                                        {/* Fallback for admin user accounts which don't have cadet profiles */}
-                                                                        <tr>
-                                                                            <td><strong>Administrator (System)</strong></td>
-                                                                            <td><span className="badge" style={{ backgroundColor: '#1e293b', color: '#fff', fontSize: '0.7rem' }}>Super Admin</span></td>
-                                                                            <td>N/A</td>
-                                                                            <td>HQ</td>
-                                                                            <td>admin@dtuncc.in</td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* 2. Squadron Tables (Colored Red, Yellow, Blue, Green) */}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                                                            
-                                                            {/* Headquarters Squadron - SLATE table */}
-                                                            <div style={{ border: '2px solid #475569', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#f1f5f9' }}>
-                                                                <h4 style={{ color: '#475569', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #cbd5e1', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#475569' }}></span> Headquarters Platoon (HQ Group)
-                                                                </h4>
-                                                                <SquadronTable squadronId="hq" borderTheme="#475569" />
-                                                            </div>
-                                                            
-                                                            {/* Alpha Squadron - RED table */}
-                                                            <div style={{ border: '2px solid #ef4444', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#fff5f5' }}>
-                                                                <h4 style={{ color: '#ef4444', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #fca5a5', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ef4444' }}></span> Alpha Squadron (Red Group)
-                                                                </h4>
-                                                                <SquadronTable squadronId="alpha" borderTheme="#ef4444" />
-                                                            </div>
-
-                                                            {/* Bravo Squadron - YELLOW table */}
-                                                            <div style={{ border: '2px solid #eab308', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#fefce8' }}>
-                                                                <h4 style={{ color: '#ca8a04', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #fef08a', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#eab308' }}></span> Bravo Squadron (Yellow Group)
-                                                                </h4>
-                                                                <SquadronTable squadronId="bravo" borderTheme="#eab308" />
-                                                            </div>
-
-                                                            {/* Charlie Squadron - BLUE table */}
-                                                            <div style={{ border: '2px solid #3b82f6', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#eff6ff' }}>
-                                                                <h4 style={{ color: '#3b82f6', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #93c5fd', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#3b82f6' }}></span> Charlie Squadron (Blue Group)
-                                                                </h4>
-                                                                <SquadronTable squadronId="charlie" borderTheme="#3b82f6" />
-                                                            </div>
-
-                                                            {/* Delta Squadron - GREEN table */}
-                                                            <div style={{ border: '2px solid #22c55e', borderRadius: 'var(--radius-md)', padding: '20px', backgroundColor: '#f0fdf4' }}>
-                                                                <h4 style={{ color: '#15803d', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #86efac', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span> Delta Squadron (Green Group)
-                                                                </h4>
-                                                                <SquadronTable squadronId="delta" borderTheme="#22c55e" />
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Cadet CRUD Directory */}
-                                        <div className="dashboard-section" style={{ padding: '25px' }}>
-                                            <h3 style={{ fontSize: '1.15rem', marginBottom: '15px', fontWeight: '700' }}><i className="fa-solid fa-address-book"></i> Active Cadet Directory</h3>
-                                            
-                                            {/* 1. Pending Approvals Sub-section */}
-                                            {cadets.filter(c => !c.approved).length > 0 && (
-                                                <div style={{ marginBottom: '25px', backgroundColor: '#fff9f0', border: '1px solid #ffe8cc', borderRadius: 'var(--radius-md)', padding: '15px' }}>
-                                                    <h4 style={{ color: '#d97706', fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <i className="fa-solid fa-user-clock"></i> Pending Registration Approvals
-                                                    </h4>
-                                                    <div style={{ overflowX: 'auto' }}>
-                                                        <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.78rem' }}>
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Name</th>
-                                                                    <th>DLI (Regt No)</th>
-                                                                    <th>Squadron</th>
-                                                                    <th>Rank</th>
-                                                                    <th>Action</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {cadets.filter(c => !c.approved).map(c => (
-                                                                    <tr key={c._id}>
-                                                                        <td>
-                                                                            <button 
-                                                                                onClick={() => setSelectedViewCadet({ ...c })}
-                                                                                style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                                                                            >
-                                                                                {c.name}
-                                                                            </button>
-                                                                        </td>
-                                                                        <td>{c.enrollmentNo || c.dliNo}</td>
-                                                                        <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
-                                                                        <td>{c.rank}</td>
-                                                                        <td>
-                                                                            <div style={{ display: 'flex', gap: '5px' }}>
-                                                                                <button className="btn btn-primary" onClick={() => handleApproveCadet(c._id)} style={{ padding: '4px 8px', fontSize: '0.7rem', backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}>Approve</button>
-                                                                                <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '4px 8px', fontSize: '0.7rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}>Reject</button>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* 2. Squadron Filter Tabs */}
-                                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                                                {['all', 'alpha', 'bravo', 'charlie', 'delta'].map(sq => (
-                                                    <button 
-                                                        key={sq}
-                                                        className={`btn ${squadronFilter === sq ? 'btn-primary' : 'btn-outline'}`}
-                                                        style={{ padding: '6px 12px', fontSize: '0.78rem', textTransform: 'uppercase' }}
-                                                        onClick={() => setSquadronFilter(sq)}
-                                                    >
-                                                        {sq === 'all' ? 'All Squadrons' : `${sq} Squadron`}
-                                                    </button>
-                                                ))}
-                                            </div>
-
-                                            {/* 3. Filtered Cadets List */}
-                                            <div style={{ overflowX: 'auto', maxHeight: '350px', overflowY: 'auto' }}>
-                                                <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem' }}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Rank & Name (Click for Details)</th>
-                                                            <th>ID</th>
-                                                            <th>DLI / Regt No</th>
-                                                            <th>Squadron</th>
-                                                            <th>Contact</th>
-                                                            <th>Status</th>
-                                                            <th>Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {cadets
-                                                            .filter(c => c.approved)
-                                                            .filter(c => squadronFilter === 'all' || c.squadron === squadronFilter)
-                                                            .map(c => (
-                                                                <tr key={c._id}>
-                                                                    <td>
-                                                                        <button 
-                                                                            onClick={() => setSelectedViewCadet({ ...c })}
-                                                                            style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                                                                            title="View full cadet profile details"
-                                                                        >
-                                                                            {c.rank} {c.name}
-                                                                        </button>
-                                                                    </td>
-                                                                    <td>{c.cadetId}</td>
-                                                                    <td>{c.enrollmentNo || c.dliNo}</td>
-                                                                    <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
-                                                                    <td>{c.contact}</td>
-                                                                    <td><span className="badge badge-success">Approved</span></td>
-                                                                    <td>
-                                                                        <div style={{ display: 'flex', gap: '5px' }}>
-                                                                            <button className="btn btn-outline" onClick={() => setSelectedViewCadet({ ...c })} style={{ padding: '4px 8px', fontSize: '0.75rem' }}><i className="fa-solid fa-pen"></i></button>
-                                                                            <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}><i className="fa-solid fa-trash"></i></button>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        {cadets.filter(c => c.approved).filter(c => squadronFilter === 'all' || c.squadron === squadronFilter).length === 0 && (
-                                                            <tr>
-                                                                <td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No enrolled cadets found for the selected squadron filter.</td>
-                                                            </tr>
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-
-
-                                        </div>
-
                                         {/* Fines and logs summary side-by-side */}
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                             <div className="dashboard-section" style={{ padding: '20px' }}>
@@ -3021,6 +2814,206 @@ function AppContent() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {currentTab === 'requests' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                            <div className="section-header">
+                                <h2>Registration Requests</h2>
+                                <p>Approve or reject pending cadet registrations for the DTU NCC Unit</p>
+                            </div>
+                            
+                            <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
+                                <h3 style={{ fontSize: '1.15rem', marginBottom: '20px', fontWeight: '700', color: 'var(--navy-blue)', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                                    <i className="fa-solid fa-user-clock"></i> Pending Registration Approvals ({cadets.filter(c => !c.approved).length})
+                                </h3>
+                                
+                                {cadets.filter(c => !c.approved).length > 0 ? (
+                                    <div style={{ overflowX: 'auto' }}>
+                                        <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem' }}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>DLI (Regt No)</th>
+                                                    <th>Squadron</th>
+                                                    <th>Rank</th>
+                                                    <th>Contact</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {cadets.filter(c => !c.approved).map(c => (
+                                                    <tr key={c._id}>
+                                                        <td>
+                                                            <button 
+                                                                onClick={() => setSelectedViewCadet({ ...c })}
+                                                                style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                                            >
+                                                                {c.name}
+                                                            </button>
+                                                        </td>
+                                                        <td>{c.enrollmentNo || c.dliNo}</td>
+                                                        <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
+                                                        <td>{c.rank}</td>
+                                                        <td>{c.contact}</td>
+                                                        <td>
+                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                <button className="btn btn-primary" onClick={() => handleApproveCadet(c._id)} style={{ padding: '6px 12px', fontSize: '0.75rem', backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}>Approve</button>
+                                                                <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '6px 12px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}>Reject</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                        <i className="fa-solid fa-circle-check" style={{ fontSize: '2.5rem', color: 'var(--success)', marginBottom: '15px' }}></i>
+                                        <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: '600' }}>No pending registration requests!</p>
+                                        <p style={{ margin: '5px 0 0 0', fontSize: '0.82rem' }}>All registered cadets are currently approved.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {currentTab === 'directory' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                            <div className="section-header">
+                                <h2>Active Cadet Directory</h2>
+                                <p>Manage active enrolled cadets, edit their details, or remove records</p>
+                            </div>
+                            
+                            <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                                    <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--navy-blue)', margin: 0 }}>
+                                        <i className="fa-solid fa-address-book"></i> Active Enrolled Cadets ({cadets.filter(c => c.approved).length})
+                                    </h3>
+                                    
+                                    {/* Squadron Filter Tabs */}
+                                    <div style={{ display: 'flex', gap: '5px' }}>
+                                        {['all', 'alpha', 'bravo', 'charlie', 'delta'].map(sq => (
+                                            <button 
+                                                key={sq}
+                                                className={`btn ${squadronFilter === sq ? 'btn-primary' : 'btn-outline'}`}
+                                                style={{ padding: '5px 10px', fontSize: '0.72rem', textTransform: 'uppercase' }}
+                                                onClick={() => setSquadronFilter(sq)}
+                                            >
+                                                {sq === 'all' ? 'All' : sq}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div style={{ overflowX: 'auto', maxHeight: '550px', overflowY: 'auto' }}>
+                                    <table className="leaderboard-table" style={{ minWidth: '100%', fontSize: '0.82rem' }}>
+                                        <thead>
+                                            <tr>
+                                                <th>Rank & Name (Click for Details)</th>
+                                                <th>ID</th>
+                                                <th>DLI / Regt No</th>
+                                                <th>Squadron</th>
+                                                <th>Contact</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {cadets
+                                                .filter(c => c.approved)
+                                                .filter(c => squadronFilter === 'all' || c.squadron === squadronFilter)
+                                                .map(c => (
+                                                    <tr key={c._id}>
+                                                        <td>
+                                                            <button 
+                                                                onClick={() => setSelectedViewCadet({ ...c })}
+                                                                style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                                                title="View and edit full cadet profile details"
+                                                            >
+                                                                {c.rank} {c.name}
+                                                            </button>
+                                                        </td>
+                                                        <td>{c.cadetId}</td>
+                                                        <td>{c.enrollmentNo || c.dliNo}</td>
+                                                        <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
+                                                        <td>{c.contact}</td>
+                                                        <td><span className="badge badge-success">Approved</span></td>
+                                                        <td>
+                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                <button className="btn btn-outline" onClick={() => setSelectedViewCadet({ ...c })} style={{ padding: '4px 8px', fontSize: '0.75rem' }}><i className="fa-solid fa-pen"></i></button>
+                                                                <button className="btn btn-outline" onClick={() => handleDeleteClick(c._id)} style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}><i className="fa-solid fa-trash"></i></button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            {cadets.filter(c => c.approved).filter(c => squadronFilter === 'all' || c.squadron === squadronFilter).length === 0 && (
+                                                <tr>
+                                                    <td colSpan="7" className="text-center" style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No enrolled cadets found for the selected squadron filter.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {currentTab === 'squadrons' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo'].includes(user.role) && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                            <div className="section-header">
+                                <h2>Squadron wise directories</h2>
+                                <p>View cadet rosters grouped by their assigned squadron commands</p>
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                {/* HQ */}
+                                <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
+                                    <h3 style={{ color: '#475569', fontSize: '1.05rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #cbd5e1', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#64748b' }}></span> Headquarters Platoon (HQ Group)
+                                    </h3>
+                                    <SquadronTable squadronId="hq" borderTheme="#475569" />
+                                </div>
+
+                                {/* Alpha */}
+                                <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
+                                    <h3 style={{ color: '#b91c1c', fontSize: '1.05rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #fca5a5', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ef4444' }}></span> Alpha Squadron (Red Group)
+                                    </h3>
+                                    <SquadronTable squadronId="alpha" borderTheme="#ef4444" />
+                                </div>
+
+                                {/* Bravo */}
+                                <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
+                                    <h3 style={{ color: '#a16207', fontSize: '1.05rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #fef08a', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#eab308' }}></span> Bravo Squadron (Yellow Group)
+                                    </h3>
+                                    <SquadronTable squadronId="bravo" borderTheme="#eab308" />
+                                </div>
+
+                                {/* Charlie */}
+                                <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
+                                    <h3 style={{ color: '#1d4ed8', fontSize: '1.05rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #bfdbfe', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#3b82f6' }}></span> Charlie Squadron (Blue Group)
+                                    </h3>
+                                    <SquadronTable squadronId="charlie" borderTheme="#3b82f6" />
+                                </div>
+
+                                {/* Delta */}
+                                <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}>
+                                    <h3 style={{ color: '#15803d', fontSize: '1.05rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '15px', borderBottom: '2px solid #86efac', paddingBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span> Delta Squadron (Green Group)
+                                    </h3>
+                                    <SquadronTable squadronId="delta" borderTheme="#22c55e" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
 
