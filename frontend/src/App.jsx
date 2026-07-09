@@ -938,7 +938,8 @@ function AppContent() {
         const sqCadets = cadets
             .filter(c => c.approved)
             .filter(c => c.squadron === squadronId)
-            .filter(c => !['SUO', 'CSM', 'CQMS', 'ANO'].includes(c.rank));
+            .filter(c => !['SUO', 'CSM', 'CQMS', 'ANO'].includes(c.rank))
+            .sort((a, b) => Number(b.year) - Number(a.year));
 
         return (
             <div style={{ overflowX: 'auto' }}>
@@ -1077,7 +1078,7 @@ function AppContent() {
                                         <li>
                                             <a 
                                                 href="#" 
-                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
                                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                                                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                                 onClick={(e) => {
@@ -1095,7 +1096,7 @@ function AppContent() {
                                                 <li>
                                                     <a 
                                                         href="#" 
-                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
                                                         onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                                         onClick={(e) => {
@@ -1111,7 +1112,7 @@ function AppContent() {
                                                 <li>
                                                     <a 
                                                         href="#" 
-                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
                                                         onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                                         onClick={(e) => {
@@ -1127,7 +1128,7 @@ function AppContent() {
                                                 <li>
                                                     <a 
                                                         href="#" 
-                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                        style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
                                                         onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                                         onClick={(e) => {
@@ -1145,7 +1146,7 @@ function AppContent() {
                                         <li>
                                             <a 
                                                 href="#" 
-                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-dark)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
                                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                                                 onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                                 onClick={(e) => {
@@ -2760,7 +2761,7 @@ function AppContent() {
                                                     <strong>Wing Division</strong>: {cadet?.wing} (1 DBN)
                                                 </div>
                                                 <div style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                                                    <strong>Enrollment Year</strong>: {cadet?.year}nd Year
+                                                    <strong>Enrollment Year</strong>: {cadet?.year === 1 ? '1st' : cadet?.year === 2 ? '2nd' : cadet?.year === 3 ? '3rd' : `${cadet?.year}th`} Year
                                                 </div>
                                                 <div style={{ padding: '8px 0' }}>
                                                     <strong>Cadet ID</strong>: {cadet?.cadetId}
@@ -3308,7 +3309,8 @@ function AppContent() {
                                             </div>
                                             <div className="form-group">
                                                 <label className="form-label" style={{ fontSize: '0.72rem' }}>Cadet Year *</label>
-                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.year || '2'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, year: parseInt(e.target.value) })} required>
+                                                <select className="form-control" style={{ fontSize: '0.8rem', padding: '6px 10px' }} value={selectedViewCadet.year || '1'} onChange={(e) => setSelectedViewCadet({ ...selectedViewCadet, year: parseInt(e.target.value) })} required>
+                                                    <option value="1">1st Year</option>
                                                     <option value="2">2nd Year</option>
                                                     <option value="3">3rd Year</option>
                                                 </select>
