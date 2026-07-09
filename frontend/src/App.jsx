@@ -108,6 +108,18 @@ function AppContent() {
     const [editNoticeTitle, setEditNoticeTitle] = useState('');
     const [editNoticeBody, setEditNoticeBody] = useState('');
 
+    // Competitions States
+    const [competitions, setCompetitions] = useState([]);
+    const [compName, setCompName] = useState('');
+    const [compDesc, setCompDesc] = useState('');
+    const [compDate, setCompDate] = useState('');
+    const [compRules, setCompRules] = useState('');
+    const [compMsg, setCompMsg] = useState('');
+    const [selectedParticipants, setSelectedParticipants] = useState([]);
+    const [customParticipants, setCustomParticipants] = useState('');
+    const [activeRegisterCompId, setActiveRegisterCompId] = useState(null);
+    const [activeRegisterCompName, setActiveRegisterCompName] = useState('');
+
     const [campTitle, setCampTitle] = useState('');
     const [campCategory, setCampCategory] = useState('National Level');
     const [campLocation, setCampLocation] = useState('');
@@ -189,6 +201,9 @@ function AppContent() {
 
             const campRes = await fetch('/api/camps');
             if (campRes.ok) setCampsList(await campRes.json());
+
+            const compListRes = await fetch('/api/competitions');
+            if (compListRes.ok) setCompetitions(await compListRes.json());
         } catch (err) {
             console.error('Error fetching public data:', err);
         }
@@ -564,6 +579,88 @@ function AppContent() {
             }
         } catch (err) {
             setRegErrorMsg('Error contacting backend server.');
+        }
+    };
+
+    const handleCreateCompetition = async (e) => {
+        e.preventDefault();
+        setCompMsg('');
+        if (!compName || !compDesc || !compDate) return;
+        try {
+            const res = await fetch('/api/competitions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: compName,
+                    description: compDesc,
+                    eventDate: compDate,
+                    rules: compRules
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setCompMsg('Competition notice posted successfully!');
+                setCompName('');
+                setCompDesc('');
+                setCompDate('');
+                setCompRules('');
+                const compListRes = await fetch('/api/competitions');
+                if (compListRes.ok) setCompetitions(await compListRes.json());
+            } else {
+                alert(data.message || 'Failed to post competition notice');
+            }
+        } catch (err) {
+            console.error('Error posting competition:', err);
+        }
+    };
+
+    const handleDeleteCompetitionEvent = async (id) => {
+        if (!confirm('Are you sure you want to delete this competition event notice? All entries will be deleted.')) return;
+        try {
+            const res = await fetch(`/api/competitions/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert('Competition event notice deleted successfully.');
+                const compListRes = await fetch('/api/competitions');
+                if (compListRes.ok) setCompetitions(await compListRes.json());
+            } else {
+                alert('Failed to delete competition notice.');
+            }
+        } catch (err) {
+            console.error('Error deleting competition:', err);
+        }
+    };
+
+    const handleRegisterCompetition = async (e) => {
+        e.preventDefault();
+        if (!activeRegisterCompId || !cadet) return;
+        const customNames = customParticipants.split('\n').map(name => name.trim()).filter(Boolean);
+        const allParticipants = [...selectedParticipants, ...customNames];
+        if (allParticipants.length === 0) {
+            alert('Please select or write at least one participant.');
+            return;
+        }
+        try {
+            const res = await fetch(`/api/competitions/${activeRegisterCompId}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    squadron: cadet.squadron,
+                    registeredBy: cadet.rank + " " + cadet.name,
+                    participants: allParticipants
+                })
+            });
+            if (res.ok) {
+                alert('Squadron participants registered successfully!');
+                setActiveRegisterCompId(null);
+                setSelectedParticipants([]);
+                setCustomParticipants('');
+                const compListRes = await fetch('/api/competitions');
+                if (compListRes.ok) setCompetitions(await compListRes.json());
+            } else {
+                alert('Failed to register participants.');
+            }
+        } catch (err) {
+            console.error('Error registering competition:', err);
         }
     };
 
@@ -1332,6 +1429,15 @@ function AppContent() {
         }
     };
 
+    const getHeaderAccountLabel = () => {
+        if (!user) return "My Account";
+        if (user.role === 'admin') return "Admin";
+        if (cadet) {
+            return cadet.rank + " " + cadet.name;
+        }
+        return user.role.toUpperCase() + " Account";
+    };
+
     const SquadronTable = ({ squadronId, borderTheme }) => {
         // Exclude command board from squadron lists (except Headquarters Platoon) to prevent duplication
         const getRankPriority = (year, rank) => {
@@ -1513,7 +1619,7 @@ function AppContent() {
                                     }}
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                                 >
-                                    <i className="fa-solid fa-circle-user" style={{ fontSize: '1.1rem' }}></i> My Account <i className={`fa-solid fa-chevron-${accountDropdownOpen ? 'up' : 'down'}`} style={{ fontSize: '0.7rem' }}></i>
+                                    <i className="fa-solid fa-circle-user" style={{ fontSize: '1.1rem' }}></i> {getHeaderAccountLabel()} <i className={`fa-solid fa-chevron-${accountDropdownOpen ? 'up' : 'down'}`} style={{ fontSize: '0.7rem' }}></i>
                                 </a>
                                 
                                 {accountDropdownOpen && (
@@ -1631,6 +1737,24 @@ function AppContent() {
                                                     }}
                                                 >
                                                     <i className="fa-solid fa-users" style={{ width: '20px', color: 'var(--primary)' }}></i> Sqn List
+                                                </a>
+                                            </li>
+                                        )}
+                                        {['admin', 'ano', 'suo', 'cqms', 'csm', 'juo', 'sgt'].includes(user.role) && (
+                                            <li>
+                                                <a 
+                                                    href="#" 
+                                                    style={{ display: 'block', padding: '10px 15px', fontSize: '0.85rem', color: 'var(--text-main)', textDecoration: 'none', transition: 'background 0.2s' }}
+                                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setCurrentTab('competitions');
+                                                        setAccountDropdownOpen(false);
+                                                        setMobileMenuOpen(false);
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-trophy" style={{ width: '20px', color: 'var(--primary)' }}></i> Competitions
                                                 </a>
                                             </li>
                                         )}
@@ -4434,6 +4558,223 @@ function AppContent() {
                         </div>
                     </div>
                 )}
+                {currentTab === 'competitions' && user && ['admin', 'ano', 'suo', 'cqms', 'csm', 'juo', 'sgt'].includes(user.role) && (
+                    <div className="view-section active">
+                        <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+                            <div className="section-header">
+                                <h2>Competition Roster Registrations</h2>
+                                <p>View and manage participant rosters submitted by Junior Under Officers (JUO) for upcoming events.</p>
+                            </div>
+
+                            {/* Create Competition Notice (Admin/ANO/SUO/CQMS only) */}
+                            {['admin', 'ano', 'suo', 'cqms'].includes(user.role) && (
+                                <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', marginBottom: '30px', textAlign: 'left' }}>
+                                    <h3 style={{ fontSize: '1.15rem', marginBottom: '20px', fontWeight: '700', color: 'var(--navy-blue)', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                                        <i className="fa-solid fa-trophy"></i> Create New Competition Event
+                                    </h3>
+                                    {compMsg && <div className="alert alert-success" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>{compMsg}</div>}
+                                    <form onSubmit={handleCreateCompetition} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div className="form-group">
+                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Competition Name *</label>
+                                            <input 
+                                                type="text" 
+                                                className="form-control" 
+                                                style={{ fontSize: '0.8rem', padding: '8px 12px' }}
+                                                placeholder="E.g., Inter-Squadron Drill Championship"
+                                                value={compName}
+                                                onChange={(e) => setCompName(e.target.value)}
+                                                required 
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Event Date *</label>
+                                            <input 
+                                                type="date" 
+                                                className="form-control" 
+                                                style={{ fontSize: '0.8rem', padding: '8px 12px' }}
+                                                value={compDate}
+                                                onChange={(e) => setCompDate(e.target.value)}
+                                                required 
+                                            />
+                                        </div>
+                                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                            <label className="form-label" style={{ fontSize: '0.78rem' }}>Description & Rules *</label>
+                                            <textarea 
+                                                className="form-control" 
+                                                style={{ fontSize: '0.8rem', padding: '8px 12px' }}
+                                                placeholder="Enter event details, guidelines, maximum participants per squadron, etc."
+                                                rows="3"
+                                                value={compDesc}
+                                                onChange={(e) => setCompDesc(e.target.value)}
+                                                required
+                                            ></textarea>
+                                        </div>
+                                        <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end' }}>
+                                            <button type="submit" className="btn btn-primary" style={{ padding: '8px 20px', fontSize: '0.85rem' }}>
+                                                <i className="fa-solid fa-bullhorn"></i> Post Competition Notice
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            )}
+
+                            {/* Active Competitions List */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                {competitions.map((comp) => {
+                                    const juoSqn = cadet ? cadet.squadron : null;
+                                    const squadronReg = comp.registrations.find(r => r.squadron === juoSqn);
+                                    const squadronCadets = cadets.filter(c => c.approved && c.squadron === juoSqn);
+
+                                    return (
+                                        <div key={comp._id} className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', textAlign: 'left' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', borderBottom: '1px solid var(--border)', paddingBottom: '15px', marginBottom: '20px' }}>
+                                                <div>
+                                                    <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--navy-blue)' }}>
+                                                        <i className="fa-solid fa-medal" style={{ color: 'var(--saffron)' }}></i> {comp.name}
+                                                    </h3>
+                                                    <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Posted On: {comp.createdDate}</p>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                                    <span className="badge" style={{ backgroundColor: 'var(--saffron)', color: '#fff', fontSize: '0.78rem', padding: '6px 12px', borderRadius: '20px' }}>
+                                                        <i className="fa-regular fa-calendar"></i> Event Date: {comp.eventDate}
+                                                    </span>
+                                                    {['admin', 'ano'].includes(user.role) && (
+                                                        <button 
+                                                            className="btn btn-outline" 
+                                                            onClick={() => handleDeleteCompetitionEvent(comp._id)}
+                                                            style={{ padding: '4px 10px', fontSize: '0.75rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                                                            title="Delete this competition event"
+                                                        >
+                                                            <i className="fa-solid fa-trash"></i> Delete
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div style={{ marginBottom: '20px' }}>
+                                                <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '5px' }}>Rules & Guidelines:</h4>
+                                                <p style={{ fontSize: '0.85rem', whiteSpace: 'pre-wrap', color: 'var(--text-main)', margin: 0 }}>{comp.description}</p>
+                                            </div>
+
+                                            {/* JUO Roster submission panel */}
+                                            {user.role === 'juo' && cadet && (
+                                                <div style={{ backgroundColor: '#f8fafc', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '25px' }}>
+                                                    <h4 style={{ fontSize: '0.92rem', fontWeight: '700', color: 'var(--navy-blue)', marginBottom: '12px' }}>
+                                                        <i className="fa-solid fa-pen-to-square"></i> Submit {cadet.squadron.toUpperCase()} Squadron Participants
+                                                    </h4>
+
+                                                    {squadronReg ? (
+                                                        <div className="alert alert-success" style={{ fontSize: '0.8rem', padding: '10px 15px', marginBottom: '15px' }}>
+                                                            <strong>Roster Status:</strong> Submitted by {squadronReg.registeredBy}. Current participants list contains <strong>{squadronReg.participants.length}</strong> cadets. You can modify it using the form below.
+                                                        </div>
+                                                    ) : (
+                                                        <div className="alert alert-warning" style={{ fontSize: '0.8rem', padding: '10px 15px', marginBottom: '15px', backgroundColor: '#fffbeb', border: '1px solid #fde68a', color: '#b45309' }}>
+                                                            <strong>Roster Status:</strong> Pending registration submission.
+                                                        </div>
+                                                    )}
+
+                                                    <form onSubmit={(e) => {
+                                                        e.preventDefault();
+                                                        setActiveRegisterCompId(comp._id);
+                                                        handleRegisterCompetition(e);
+                                                    }}>
+                                                        <div className="form-group" style={{ marginBottom: '15px' }}>
+                                                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Select Squadron Cadets (Checkboxes) *</label>
+                                                            <div style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '10px', backgroundColor: '#fff', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
+                                                                {squadronCadets.map(c => {
+                                                                    const isChecked = selectedParticipants.includes(`${c.rank} ${c.name}`);
+                                                                    return (
+                                                                        <label key={c._id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', cursor: 'pointer', margin: 0 }}>
+                                                                            <input 
+                                                                                type="checkbox"
+                                                                                checked={isChecked}
+                                                                                onChange={(e) => {
+                                                                                    if (e.target.checked) {
+                                                                                        setSelectedParticipants([...selectedParticipants, `${c.rank} ${c.name}`]);
+                                                                                    } else {
+                                                                                        setSelectedParticipants(selectedParticipants.filter(p => p !== `${c.rank} ${c.name}`));
+                                                                                    }
+                                                                                    setActiveRegisterCompId(comp._id);
+                                                                                }}
+                                                                            />
+                                                                            {c.rank} {c.name}
+                                                                        </label>
+                                                                    );
+                                                                })}
+                                                                {squadronCadets.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>No approved cadets found in {cadet.squadron.toUpperCase()} squadron directory.</span>}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="form-group" style={{ marginBottom: '15px' }}>
+                                                            <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>External/Additional Participants (One name per line)</label>
+                                                            <textarea 
+                                                                className="form-control" 
+                                                                style={{ fontSize: '0.8rem', padding: '8px 12px' }}
+                                                                placeholder="Type any guest/unregistered cadet names if applicable..."
+                                                                rows="2"
+                                                                value={activeRegisterCompId === comp._id ? customParticipants : ''}
+                                                                onChange={(e) => {
+                                                                    setCustomParticipants(e.target.value);
+                                                                    setActiveRegisterCompId(comp._id);
+                                                                }}
+                                                            ></textarea>
+                                                        </div>
+
+                                                        <button type="submit" className="btn btn-primary" style={{ padding: '6px 15px', fontSize: '0.8rem' }}>
+                                                            <i className="fa-solid fa-cloud-arrow-up"></i> Submit Roster
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            )}
+
+                                            {/* Roster View Grid (All Squadron Placements) */}
+                                            <div>
+                                                <h4 style={{ fontSize: '0.92rem', fontWeight: '700', color: 'var(--navy-blue)', borderBottom: '1px solid var(--border)', paddingBottom: '6px', marginBottom: '15px' }}>
+                                                    <i className="fa-solid fa-list-check"></i> Squadron Registrations Status
+                                                </h4>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px' }}>
+                                                    {['hq', 'alpha', 'bravo', 'charlie', 'delta'].map(sq => {
+                                                        const reg = comp.registrations.find(r => r.squadron === sq);
+                                                        return (
+                                                            <div key={sq} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '12px', backgroundColor: reg ? '#f0fdf4' : '#fafafa', borderLeft: `4px solid ${reg ? 'var(--success)' : 'var(--border)'}` }}>
+                                                                <h5 style={{ margin: '0 0 8px 0', textTransform: 'uppercase', fontSize: '0.82rem', fontWeight: '800', color: reg ? 'var(--success)' : 'var(--text-muted)' }}>
+                                                                    {sq === 'hq' ? 'Headquarters' : sq.toUpperCase()}
+                                                                </h5>
+                                                                {reg ? (
+                                                                    <div>
+                                                                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '5px' }}>
+                                                                            By: {reg.registeredBy}
+                                                                        </span>
+                                                                        <ol style={{ paddingLeft: '15px', margin: 0, fontSize: '0.78rem', color: 'var(--text-main)' }}>
+                                                                            {reg.participants.map((p, pIdx) => <li key={pIdx} style={{ marginBottom: '2px' }}>{p}</li>)}
+                                                                        </ol>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                                                        <i className="fa-regular fa-clock"></i> Roster pending
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {competitions.length === 0 && (
+                                    <div className="dashboard-section" style={{ padding: '40px', textAlign: 'center', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)' }}>
+                                        <i className="fa-solid fa-trophy" style={{ fontSize: '3rem', color: 'var(--border)', marginBottom: '15px' }}></i>
+                                        <h3 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-muted)' }}>No competition events registered yet.</h3>
+                                        <p style={{ margin: '5px 0 0 0', fontSize: '0.82rem', color: 'var(--text-muted)' }}>When a new competition notice is created, it will be listed here.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {editingNotice && (
                     <div className="modal-backdrop" style={{
                         position: 'fixed',

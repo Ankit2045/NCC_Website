@@ -21,6 +21,7 @@ app.use('/api/exemptions', require('./routes/exemptions'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/camps', require('./routes/camps'));
+app.use('/api/competitions', require('./routes/competitions'));
 
 // Basic Route
 app.get('/', (req, res) => {
