@@ -1285,13 +1285,59 @@ function AppContent() {
         }
     };
 
+    const formatDateTime = (dateStr) => {
+        if (!dateStr) return 'N/A';
+        try {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }) + ' ' + d.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        } catch (e) {
+            return dateStr;
+        }
+    };
+
     const SquadronTable = ({ squadronId, borderTheme }) => {
         // Exclude command board from squadron lists (except Headquarters Platoon) to prevent duplication
+        const getRankPriority = (year, rank) => {
+            const r = rank.toUpperCase().replace('/', '');
+            if (year === 3) {
+                if (r === 'SUO') return 1;
+                if (r === 'JUO') return 2;
+                if (r === 'CSM') return 3;
+                if (r === 'CQMS') return 4;
+                if (r === 'SGT') return 5;
+                return 99;
+            } else if (year === 2) {
+                if (r === 'CPL') return 1;
+                if (r === 'LCPL' || r === 'L/CPL') return 2;
+                if (r === 'CADET' || r === 'CDT') return 3;
+                return 99;
+            }
+            return 99;
+        };
+
         const sqCadets = cadets
             .filter(c => c.approved)
             .filter(c => c.squadron === squadronId)
             .filter(c => squadronId === 'hq' || !['SUO', 'CSM', 'CQMS', 'ANO'].includes(c.rank))
-            .sort((a, b) => Number(b.year) - Number(a.year));
+            .sort((a, b) => {
+                const yearA = Number(a.year) || 1;
+                const yearB = Number(b.year) || 1;
+                if (yearA !== yearB) return yearB - yearA;
+
+                const priorityA = getRankPriority(yearA, a.rank);
+                const priorityB = getRankPriority(yearB, b.rank);
+                if (priorityA !== priorityB) return priorityA - priorityB;
+
+                return a.name.localeCompare(b.name);
+            });
 
         return (
             <div style={{ overflowX: 'auto' }}>
@@ -3467,6 +3513,7 @@ function AppContent() {
                                                     <th>Squadron</th>
                                                     <th>Rank</th>
                                                     <th>Contact</th>
+                                                    <th>Applied On</th>
                                                     <th>Action</th>
                                                 </tr>
                                             </thead>
@@ -3485,6 +3532,7 @@ function AppContent() {
                                                         <td style={{ textTransform: 'uppercase' }}>{c.squadron}</td>
                                                         <td>{c.rank}</td>
                                                         <td>{c.contact}</td>
+                                                        <td>{formatDateTime(c.createdAt)}</td>
                                                         <td>
                                                             <div style={{ display: 'flex', gap: '5px' }}>
                                                                 <button className="btn btn-primary" onClick={() => handleApproveCadet(c._id)} style={{ padding: '6px 12px', fontSize: '0.75rem', backgroundColor: 'var(--success)', borderColor: 'var(--success)' }}>Approve</button>
