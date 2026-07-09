@@ -2612,8 +2612,8 @@ function AppContent() {
                                                 { name: "M. Vishnu", img: null },
                                                 { name: "Ritik Thakur", img: null },
                                                 { name: "Nishant Tiwari", img: "gallery/sgt_nishant.png" },
-                                                { name: "Mayank Rohilla (PT)", img: null },
-                                                { name: "Pratik (Media)", img: "gallery/sgt_pratik.png" }
+                                                { name: "Mayank Rohilla", img: null },
+                                                { name: "Pratik", img: "gallery/sgt_pratik.png" }
                                             ].map((sgt, idx) => (
                                                 <span key={idx}>{renderProfileCard(sgt.name, "Sergeant", "var(--text-muted)", "var(--text-muted)", sgt.img)}</span>
                                             ))}
