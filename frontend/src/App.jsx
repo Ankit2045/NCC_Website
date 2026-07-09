@@ -4566,8 +4566,8 @@ function AppContent() {
                                 <p>View and manage participant rosters submitted by Junior Under Officers (JUO) for upcoming events.</p>
                             </div>
 
-                            {/* Create Competition Notice (Admin/ANO/SUO/CQMS only) */}
-                            {['admin', 'ano', 'suo', 'cqms'].includes(user.role) && (
+                            {/* Create Competition Notice (Admin/ANO/SUO/CQMS/CSM only) */}
+                            {['admin', 'ano', 'suo', 'cqms', 'csm'].includes(user.role) && (
                                 <div className="dashboard-section" style={{ padding: '25px', backgroundColor: '#fff', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', marginBottom: '30px', textAlign: 'left' }}>
                                     <h3 style={{ fontSize: '1.15rem', marginBottom: '20px', fontWeight: '700', color: 'var(--navy-blue)', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
                                         <i className="fa-solid fa-trophy"></i> Create New Competition Event
@@ -4638,7 +4638,7 @@ function AppContent() {
                                                     <span className="badge" style={{ backgroundColor: 'var(--saffron)', color: '#fff', fontSize: '0.78rem', padding: '6px 12px', borderRadius: '20px' }}>
                                                         <i className="fa-regular fa-calendar"></i> Event Date: {comp.eventDate}
                                                     </span>
-                                                    {['admin', 'ano'].includes(user.role) && (
+                                                    {['admin', 'ano', 'csm'].includes(user.role) && (
                                                         <button 
                                                             className="btn btn-outline" 
                                                             onClick={() => handleDeleteCompetitionEvent(comp._id)}
