@@ -3242,29 +3242,44 @@ function AppContent() {
                                                 <div className="form-group" style={{ marginBottom: '0' }}>
                                                     <label className="form-label" style={{ fontSize: '0.8rem' }}>Select Competition</label>
                                                     <select 
-                                                        className="form-control" 
-                                                        style={{ fontSize: '0.85rem' }}
-                                                        value={simCompId}
-                                                        onChange={(e) => {
-                                                            setSimCompId(e.target.value);
-                                                            if (e.target.value === 'cross-country') {
-                                                                setSimCompName('Cross-Country');
-                                                                setSimCompType('Major');
-                                                            } else if (e.target.value === 'quarter-guard') {
-                                                                setSimCompName('Quarter Guard');
-                                                                setSimCompType('Major');
-                                                            } else {
-                                                                setSimCompName('100m Athletics');
-                                                                setSimCompType('Athletics');
-                                                            }
-                                                        }}
-                                                        required
-                                                    >
-                                                        <option value="cross-country">Cross-Country (Major)</option>
-                                                        <option value="quarter-guard">Quarter Guard (Major)</option>
-                                                        <option value="100m-run">100m Sprint (Athletics)</option>
-                                                        <option value="relay-run">4x100m Relay (Athletics)</option>
-                                                    </select>
+                                                         className="form-control" 
+                                                         style={{ fontSize: '0.85rem' }}
+                                                         value={simCompId}
+                                                         onChange={(e) => {
+                                                             const val = e.target.value;
+                                                             setSimCompId(val);
+                                                             const compLookup = {
+                                                                 'kabaddi': { name: 'Kabaddi', type: 'Athletics' },
+                                                                 'quiz': { name: 'Quiz', type: 'Athletics' },
+                                                                 'volleyball': { name: 'Volleyball', type: 'Athletics' },
+                                                                 'athletics': { name: 'Athletics', type: 'Athletics' },
+                                                                 'debate': { name: 'Debate', type: 'Athletics' },
+                                                                 'basketball': { name: 'Basketball', type: 'Athletics' },
+                                                                 'tug-of-war': { name: 'Tug of War', type: 'Athletics' },
+                                                                 'cross-country': { name: 'Cross Country', type: 'Major' },
+                                                                 'team-presentation': { name: 'Team Presentation', type: 'Athletics' },
+                                                                 'squad-drill': { name: 'Squad Drill', type: 'Major' },
+                                                                 'quarter-guard': { name: 'Quarter Guard', type: 'Major' }
+                                                             };
+                                                             if (compLookup[val]) {
+                                                                 setSimCompName(compLookup[val].name);
+                                                                 setSimCompType(compLookup[val].type);
+                                                             }
+                                                         }}
+                                                         required
+                                                     >
+                                                         <option value="cross-country">Cross Country (Major)</option>
+                                                         <option value="squad-drill">Squad Drill (Major)</option>
+                                                         <option value="quarter-guard">Quarter Guard (Major)</option>
+                                                         <option value="kabaddi">Kabaddi (Minor/Sport)</option>
+                                                         <option value="quiz">Quiz (Minor/Sport)</option>
+                                                         <option value="volleyball">Volleyball (Minor/Sport)</option>
+                                                         <option value="athletics">Athletics (Minor/Sport)</option>
+                                                         <option value="debate">Debate (Minor/Sport)</option>
+                                                         <option value="basketball">Basketball (Minor/Sport)</option>
+                                                         <option value="tug-of-war">Tug of War (Minor/Sport)</option>
+                                                         <option value="team-presentation">Team Presentation (Minor/Sport)</option>
+                                                     </select>
                                                 </div>
                                                 <div className="form-group" style={{ marginBottom: '0' }}>
                                                     <label className="form-label" style={{ fontSize: '0.8rem' }}>Select Squadron</label>
