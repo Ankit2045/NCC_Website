@@ -2879,10 +2879,13 @@ function AppContent() {
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
                                             {[
-                                                "Adarsh", "Nikhil Kumar", "Yash Lohchab",
-                                                "Vishal Singh", "Nikhil Rai"
-                                            ].map((name, idx) => (
-                                                <span key={idx}>{renderProfileCard(name, "Corporal", "var(--text-muted)", "var(--text-muted)", null)}</span>
+                                                { name: "Adarsh", img: "gallery/cpl_adarsh.png" },
+                                                { name: "Nikhil Kumar", img: "gallery/cpl_nikhil_kumar.jpg" },
+                                                { name: "Yash Lohchab", img: "gallery/cpl_yash_lohchab.png" },
+                                                { name: "Vishal Singh", img: "gallery/cpl_vishal_singh.png" },
+                                                { name: "Nikhil Rai", img: "gallery/cpl_nikhil_rai.png" }
+                                            ].map((cpl, idx) => (
+                                                <span key={idx}>{renderProfileCard(cpl.name, "Corporal", "var(--text-muted)", "var(--text-muted)", cpl.img)}</span>
                                             ))}
                                         </div>
                                     </div>
