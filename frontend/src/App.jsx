@@ -2897,13 +2897,13 @@ function AppContent() {
                                         </h3>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '20px' }}>
                                             {[
-                                                { name: "Ujjwal Jha", img: null },
-                                                { name: "Suraj Kumar", img: null },
+                                                { name: "Ujjwal Jha", img: "gallery/lcpl_ujjwal.jpg" },
+                                                { name: "Suraj Kumar", img: "gallery/lcpl_suraj.png" },
                                                 { name: "Kartik", img: "gallery/lcpl_kartik.png" },
                                                 { name: "Kundan Kumar", img: "gallery/lcpl_kundan.png" },
                                                 { name: "Ankur Debsharma", img: "gallery/lcpl_ankur.jpg" },
                                                 { name: "Nikhil Kumar", img: "gallery/lcpl_nikhil.png" },
-                                                { name: "Shrish Chand", img: null },
+                                                { name: "Shrish Chand", img: "gallery/lcpl_shrish.png" },
                                                 { name: "Krishna Yadav", img: "gallery/lcpl_krishna.jpg" }
                                             ].map((lcpl, idx) => (
                                                 <span key={idx}>{renderProfileCard(lcpl.name, "Lance Corporal", "var(--text-muted)", "var(--text-muted)", lcpl.img)}</span>
